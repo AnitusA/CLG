@@ -1,9 +1,10 @@
 import type { MetaFunction } from "@remix-run/node";
+import { Link } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
+    { title: "CSEB Portal" },
+    { name: "description", content: "Computer Science and Engineering Department Portal" },
   ];
 };
 
@@ -13,25 +14,39 @@ export default function Index() {
       <div className="flex flex-col items-center gap-16">
         <header className="flex flex-col items-center gap-9">
           <h1 className="leading text-2xl font-bold text-gray-800 dark:text-gray-100">
-            Welcome to <span className="sr-only">Remix</span>
+            Welcome to <span className="sr-only">CSEB Portal</span>
           </h1>
           <div className="h-[144px] w-[434px]">
             <img
               src="/logo-light.png"
-              alt="Remix"
+              alt="CSEB"
               className="block w-full dark:hidden"
             />
             <img
               src="/logo-dark.png"
-              alt="Remix"
+              alt="CSEB"
               className="hidden w-full dark:block"
             />
           </div>
         </header>
         <nav className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-gray-200 p-6 dark:border-gray-700">
           <p className="leading-6 text-gray-700 dark:text-gray-200">
-            What&apos;s next?
+            Computer Science and Engineering Department Portal
           </p>
+          <div className="flex gap-4">
+            <Link
+              to="/login"
+              className="group flex items-center gap-3 self-stretch p-3 leading-normal text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+            >
+              Login to Your Account
+            </Link>
+            <Link
+              to="/register"
+              className="group flex items-center gap-3 self-stretch p-3 leading-normal text-blue-700 hover:underline dark:text-blue-500"
+            >
+              Register as Student
+            </Link>
+          </div>
           <ul>
             {resources.map(({ href, text, icon }) => (
               <li key={href}>
