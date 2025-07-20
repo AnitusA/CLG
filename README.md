@@ -1,6 +1,23 @@
-# Welcome to Remix!
+# CLG Admin Management System
 
-- 📖 [Remix docs](https://remix.run/docs)
+A comprehensive admin dashboard for College management built with Remix, TypeScript, and Supabase.
+
+## Features
+
+- **Admin Dashboard** with 9 management modules:
+  - Assignments Management
+  - Deadlines & Record Ending Dates
+  - Daily Homework Tracking
+  - Daily Updates & Announcements
+  - Notes & Study Materials
+  - Test Scheduling & Updates
+  - Syllabus Management
+  - Birthday Tracking
+  - Seminars & Events
+
+- **Authentication System** for students and administrators
+- **Professional UI** with glassmorphism design and premium styling
+- **Database Integration** with Supabase PostgreSQL
 
 ## Development
 
@@ -9,6 +26,17 @@ Run the dev server:
 ```sh
 npm run dev
 ```
+
+**Admin Login:** Use pass key `admin123` at http://localhost:5173/login/admin
+
+## Database Setup
+
+1. Run the database setup script in your Supabase SQL Editor:
+```sql
+-- Use database-reset-and-setup.sql
+```
+
+2. Configure your `.env` file with Supabase credentials
 
 ## Deployment
 
@@ -24,17 +52,10 @@ Then run the app in production mode:
 npm start
 ```
 
-Now you'll need to pick a host to deploy it to.
+## Technology Stack
 
-### DIY
-
-If you're familiar with deploying Node applications, the built-in Remix app server is production-ready.
-
-Make sure to deploy the output of `npm run build`
-
-- `build/server`
-- `build/client`
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever css framework you prefer. See the [Vite docs on css](https://vitejs.dev/guide/features.html#css) for more information.
+- **Framework:** Remix.run with TypeScript
+- **Styling:** Tailwind CSS with custom glassmorphism effects
+- **Database:** Supabase (PostgreSQL)
+- **Authentication:** Custom session management
+- **Build Tool:** Vite
