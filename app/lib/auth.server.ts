@@ -1,23 +1,12 @@
-import bcrypt from 'bcryptjs';
 import { supabase } from './supabase.server';
 
-export async function hashPassword(password: string): Promise<string> {
-  return bcrypt.hash(password, 10);
-}
-
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  return bcrypt.compare(password, hash);
-}
-
 export async function createStudent(registerNumber: string, password: string) {
-  const hashedPassword = await hashPassword(password);
-  
   const { data, error } = await supabase
     .from('students')
     .insert([
       {
         register_number: registerNumber,
-        password_hash: hashedPassword,
+        password: password, // Changed from password_hash to password
       }
     ])
     .select()
@@ -31,21 +20,35 @@ export async function createStudent(registerNumber: string, password: string) {
 }
 
 export async function authenticateStudent(registerNumber: string, password: string) {
+  console.log('🔍 Auth attempt:', { registerNumber, password });
+  
   const { data: student, error } = await supabase
     .from('students')
     .select('*')
     .eq('register_number', registerNumber)
     .single();
 
+  console.log('📊 Database result:', { student, error });
+
   if (error || !student) {
+    console.log('❌ Student not found or error:', error);
     return null;
   }
 
-  const isValid = await verifyPassword(password, student.password_hash);
+  // Direct password comparison (no hashing)
+  const isValid = password === student.password; // Changed from password_hash to password
+  console.log('🔐 Password check:', { 
+    inputPassword: password, 
+    dbPassword: student.password, 
+    isValid 
+  });
+  
   if (!isValid) {
+    console.log('❌ Password mismatch');
     return null;
   }
 
+  console.log('✅ Authentication successful');
   return {
     id: student.id,
     registerNumber: student.register_number,
@@ -53,6 +56,6 @@ export async function authenticateStudent(registerNumber: string, password: stri
 }
 
 export function authenticateAdmin(passKey: string): boolean {
-  const adminPassKey = 'admin123'; // Hardcoded admin password
+  const adminPassKey = process.env.ADMIN_PASSKEY || 'admin123'; // Fallback to default
   return passKey === adminPassKey;
 }

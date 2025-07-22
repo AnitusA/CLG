@@ -45,7 +45,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         due_date: dueDate,
         subject,
         priority,
-        status: 'active',
+        status: 'pending',
         created_at: new Date().toISOString()
       });
 
@@ -62,6 +62,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const { error } = await supabase
       .from('assignments')
       .delete()
+      .eq('id', assignmentId);
+
+    if (error) {
+      return json({ error: error.message }, { status: 400 });
+    }
+
+    return redirect('/admin/assignments');
+  }
+
+  if (intent === 'updateStatus') {
+    const assignmentId = formData.get('assignmentId') as string;
+    const status = formData.get('status') as string;
+
+    const { error } = await supabase
+      .from('assignments')
+      .update({ status })
       .eq('id', assignmentId);
 
     if (error) {
@@ -231,6 +247,57 @@ export default function AssignmentManagement() {
           </div>
         )}
 
+        {/* Status Statistics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-4">
+            <div className="flex items-center">
+              <div className="p-2 rounded-lg bg-yellow-500">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pending</p>
+                <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {assignments.filter(a => a.status === 'pending').length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-4">
+            <div className="flex items-center">
+              <div className="p-2 rounded-lg bg-green-500">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed</p>
+                <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {assignments.filter(a => a.status === 'completed').length}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-4">
+            <div className="flex items-center">
+              <div className="p-2 rounded-lg bg-purple-500">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Subjects</p>
+                <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                  {new Set(assignments.map(a => a.subject)).size}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Assignments List */}
         <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
           <div className="flex justify-between items-center mb-6">
@@ -295,12 +362,36 @@ export default function AssignmentManagement() {
                     {assignment.description}
                   </p>
 
+                  <div className="mb-4">
+                    <span className={`inline-block px-2 py-1 text-xs rounded-full ${
+                      assignment.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
+                      assignment.status === 'cancelled' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' :
+                      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                    }`}>
+                      {assignment.status}
+                    </span>
+                  </div>
+
                   <div className="flex justify-between items-center">
                     <span className="text-xs text-gray-500 dark:text-gray-400">
                       Created {new Date(assignment.created_at).toLocaleDateString()}
                     </span>
                     
-                    <div className="flex space-x-2">
+                    <div className="flex items-center space-x-2">
+                      <Form method="post" className="inline">
+                        <input type="hidden" name="intent" value="updateStatus" />
+                        <input type="hidden" name="assignmentId" value={assignment.id} />
+                        <select
+                          name="status"
+                          value={assignment.status}
+                          onChange={(e) => e.target.form?.requestSubmit()}
+                          className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="completed">Completed</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      </Form>
                       <button className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

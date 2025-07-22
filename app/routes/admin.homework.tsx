@@ -46,11 +46,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         assignment_date: assignedDate,
         due_date: dueDate,
         difficulty,
-        status: 'active',
-        created_at: new Date().toISOString()
+        status: 'pending', // Set as pending so it shows up on student dashboard
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       });
 
     if (error) {
+      console.error('Error creating homework:', error);
       return json({ error: error.message }, { status: 400 });
     }
 
@@ -66,6 +68,27 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       .eq('id', homeworkId);
 
     if (error) {
+      console.error('Error deleting homework:', error);
+      return json({ error: error.message }, { status: 400 });
+    }
+
+    return redirect('/admin/homework');
+  }
+
+  if (intent === 'updateStatus') {
+    const homeworkId = formData.get('homeworkId') as string;
+    const newStatus = formData.get('status') as string;
+    
+    const { error } = await supabase
+      .from('homework')
+      .update({ 
+        status: newStatus,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', homeworkId);
+
+    if (error) {
+      console.error('Error updating homework status:', error);
       return json({ error: error.message }, { status: 400 });
     }
 
@@ -169,7 +192,7 @@ export default function HomeworkManagement() {
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pending</p>
                 <p className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {homework.filter(hw => new Date(hw.due_date) > new Date()).length}
+                  {homework.filter(hw => hw.status === 'pending').length}
                 </p>
               </div>
             </div>
@@ -177,15 +200,15 @@ export default function HomeworkManagement() {
 
           <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-4">
             <div className="flex items-center">
-              <div className="p-2 rounded-lg bg-purple-500">
+              <div className="p-2 rounded-lg bg-green-500">
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Subjects</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed</p>
                 <p className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {new Set(homework.map(hw => hw.subject)).size}
+                  {homework.filter(hw => hw.status === 'completed').length}
                 </p>
               </div>
             </div>
@@ -385,6 +408,15 @@ export default function HomeworkManagement() {
                           }`}>
                             {hw.difficulty}
                           </span>
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            hw.status === 'completed' 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                              : hw.status === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                          }`}>
+                            {hw.status}
+                          </span>
                         </div>
 
                         <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
@@ -408,7 +440,23 @@ export default function HomeworkManagement() {
                       </div>
 
                       <div className="flex items-center space-x-2 ml-4">
-                        <button className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
+                        {/* Status Update Dropdown */}
+                        <Form method="post" className="inline">
+                          <input type="hidden" name="intent" value="updateStatus" />
+                          <input type="hidden" name="homeworkId" value={hw.id} />
+                          <select
+                            name="status"
+                            onChange={(e) => e.target.form?.requestSubmit()}
+                            defaultValue={hw.status}
+                            className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancelled">Cancelled</option>
+                          </select>
+                        </Form>
+
+                        <button className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Edit homework">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
@@ -420,6 +468,7 @@ export default function HomeworkManagement() {
                           <button 
                             type="submit"
                             className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                            title="Delete homework"
                             onClick={(e) => {
                               if (!confirm('Are you sure you want to delete this homework?')) {
                                 e.preventDefault();
