@@ -128,7 +128,7 @@ export default function StudentCalendar() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-teal-600 to-teal-800 bg-clip-text text-transparent">
-          📅 Calendar View
+          ⌛ Calendar View
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
           View all your academic events in calendar format
