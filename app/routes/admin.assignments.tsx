@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { Form, Link, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { requireAdmin } from '~/lib/session.server';
 import { supabase } from '~/lib/supabase.server';
@@ -35,7 +35,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const description = formData.get('description') as string;
     const dueDate = formData.get('dueDate') as string;
     const subject = formData.get('subject') as string;
-    const priority = formData.get('priority') as string;
 
     const { error } = await supabase
       .from('assignments')
@@ -44,8 +43,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         description,
         due_date: dueDate,
         subject,
-        priority,
-        status: 'pending',
+        status: 'active',
         created_at: new Date().toISOString()
       });
 
@@ -53,7 +51,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return redirect('/admin/assignments');
+    return json({ success: true, message: 'Assignment created successfully' });
   }
 
   if (intent === 'delete') {
@@ -68,7 +66,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return redirect('/admin/assignments');
+    return json({ success: true, message: 'Assignment deleted successfully' });
   }
 
   if (intent === 'updateStatus') {
@@ -84,7 +82,32 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return redirect('/admin/assignments');
+    return json({ success: true, message: 'Assignment status updated successfully' });
+  }
+
+  if (intent === 'update') {
+    const assignmentId = formData.get('assignmentId') as string;
+    const title = formData.get('title') as string;
+    const description = formData.get('description') as string;
+    const dueDate = formData.get('dueDate') as string;
+    const subject = formData.get('subject') as string;
+
+    const { error } = await supabase
+      .from('assignments')
+      .update({
+        title,
+        description,
+        due_date: dueDate,
+        subject,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', assignmentId);
+
+    if (error) {
+      return json({ error: error.message }, { status: 400 });
+    }
+
+    return json({ success: true, message: 'Assignment updated successfully' });
   }
 
   return json({ error: 'Invalid action' }, { status: 400 });
@@ -95,8 +118,31 @@ export default function AssignmentManagement() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const [showForm, setShowForm] = useState(false);
+  const [editingAssignment, setEditingAssignment] = useState<any>(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const isSubmitting = navigation.state === 'submitting';
+
+  // Hide forms after successful submission
+  useEffect(() => {
+    if (navigation.state === 'idle' && !('error' in (actionData || {}))) {
+      setShowForm(false);
+      setEditingAssignment(null);
+      
+      // Show success message briefly
+      if (actionData && 'success' in actionData) {
+        setShowSuccessMessage(true);
+        setTimeout(() => setShowSuccessMessage(false), 3000);
+      }
+    }
+  }, [navigation.state, actionData]);
+
+  // Clear success message when opening forms
+  useEffect(() => {
+    if (showForm || editingAssignment) {
+      setShowSuccessMessage(false);
+    }
+  }, [showForm, editingAssignment]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
@@ -121,7 +167,10 @@ export default function AssignmentManagement() {
             </div>
             
             <button
-              onClick={() => setShowForm(!showForm)}
+              onClick={() => {
+                setEditingAssignment(null);
+                setShowForm(!showForm);
+              }}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg hover:shadow-xl"
             >
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,18 +183,30 @@ export default function AssignmentManagement() {
       </header>
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Success Message */}
+        {showSuccessMessage && actionData && 'success' in actionData && (
+          <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-green-600 dark:text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-green-600 dark:text-green-400 font-medium">{actionData.message}</p>
+            </div>
+          </div>
+        )}
+
         {/* Create Assignment Form */}
         {showForm && (
           <div className="mb-8 bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Create New Assignment</h2>
             
-            <Form method="post" className="space-y-6">
+            <Form method="post" className="space-y-6" key="create-form">
               <input type="hidden" name="intent" value="create" />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Assignment Title
+                    Assignment Name
                   </label>
                   <input
                     type="text"
@@ -153,7 +214,7 @@ export default function AssignmentManagement() {
                     name="title"
                     required
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Enter assignment title..."
+                    placeholder="Enter assignment name..."
                   />
                 </div>
 
@@ -161,20 +222,14 @@ export default function AssignmentManagement() {
                   <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Subject
                   </label>
-                  <select
+                  <input
+                    type="text"
                     id="subject"
                     name="subject"
                     required
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  >
-                    <option value="">Select Subject</option>
-                    <option value="Mathematics">Mathematics</option>
-                    <option value="Physics">Physics</option>
-                    <option value="Chemistry">Chemistry</option>
-                    <option value="Computer Science">Computer Science</option>
-                    <option value="English">English</option>
-                    <option value="Biology">Biology</option>
-                  </select>
+                    placeholder="Enter subject name..."
+                  />
                 </div>
 
                 <div>
@@ -189,35 +244,18 @@ export default function AssignmentManagement() {
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
                   />
                 </div>
-
-                <div>
-                  <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Priority
-                  </label>
-                  <select
-                    id="priority"
-                    name="priority"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                  </select>
-                </div>
               </div>
 
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Description
+                  Description <span className="text-gray-500 text-sm">(Optional)</span>
                 </label>
                 <textarea
                   id="description"
                   name="description"
                   rows={4}
-                  required
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  placeholder="Enter assignment description and requirements..."
+                  placeholder="Enter assignment description and requirements (optional)..."
                 />
               </div>
 
@@ -239,7 +277,102 @@ export default function AssignmentManagement() {
               </div>
             </Form>
 
-            {actionData?.error && (
+            {actionData && 'error' in actionData && (
+              <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p className="text-red-600 dark:text-red-400">{actionData.error}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Edit Assignment Form */}
+        {editingAssignment && (
+          <div className="mb-8 bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Edit Assignment</h2>
+            
+            <Form method="post" className="space-y-6" key={`edit-form-${editingAssignment.id}`}>
+              <input type="hidden" name="intent" value="update" />
+              <input type="hidden" name="assignmentId" value={editingAssignment.id} />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="edit-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Assignment Name
+                  </label>
+                  <input
+                    type="text"
+                    id="edit-title"
+                    name="title"
+                    defaultValue={editingAssignment.title}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                    placeholder="Enter assignment name..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="edit-subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Subject
+                  </label>
+                  <input
+                    type="text"
+                    id="edit-subject"
+                    name="subject"
+                    defaultValue={editingAssignment.subject}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                    placeholder="Enter subject name..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="edit-dueDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Due Date
+                  </label>
+                  <input
+                    type="date"
+                    id="edit-dueDate"
+                    name="dueDate"
+                    defaultValue={editingAssignment.due_date}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Description <span className="text-gray-500 text-sm">(Optional)</span>
+                </label>
+                <textarea
+                  id="edit-description"
+                  name="description"
+                  rows={4}
+                  defaultValue={editingAssignment.description}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                  placeholder="Enter assignment description and requirements (optional)..."
+                />
+              </div>
+
+              <div className="flex justify-end space-x-4">
+                <button
+                  type="button"
+                  onClick={() => setEditingAssignment(null)}
+                  className="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Updating...' : 'Update Assignment'}
+                </button>
+              </div>
+            </Form>
+
+            {actionData && 'error' in actionData && (
               <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                 <p className="text-red-600 dark:text-red-400">{actionData.error}</p>
               </div>
@@ -257,9 +390,9 @@ export default function AssignmentManagement() {
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pending</p>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active</p>
                 <p className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {assignments.filter(a => a.status === 'pending').length}
+                  {assignments.filter(a => a.status === 'active').length}
                 </p>
               </div>
             </div>
@@ -326,7 +459,11 @@ export default function AssignmentManagement() {
           ) : (
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {assignments.map((assignment) => (
-                <div key={assignment.id} className="bg-white/50 dark:bg-slate-700/50 rounded-xl p-6 border border-white/20 hover:shadow-lg transition-shadow">
+                <div key={assignment.id} className={`bg-white/50 dark:bg-slate-700/50 rounded-xl p-6 border transition-all duration-200 hover:shadow-lg ${
+                  editingAssignment?.id === assignment.id 
+                    ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/50 dark:bg-blue-900/20' 
+                    : 'border-white/20'
+                }`}>
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -347,15 +484,6 @@ export default function AssignmentManagement() {
                         </span>
                       </div>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      assignment.priority === 'high' 
-                        ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                        : assignment.priority === 'medium'
-                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-                        : 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                    }`}>
-                      {assignment.priority}
-                    </span>
                   </div>
 
                   <p className="text-gray-600 dark:text-gray-300 text-sm mb-4 line-clamp-3">
@@ -378,21 +506,14 @@ export default function AssignmentManagement() {
                     </span>
                     
                     <div className="flex items-center space-x-2">
-                      <Form method="post" className="inline">
-                        <input type="hidden" name="intent" value="updateStatus" />
-                        <input type="hidden" name="assignmentId" value={assignment.id} />
-                        <select
-                          name="status"
-                          value={assignment.status}
-                          onChange={(e) => e.target.form?.requestSubmit()}
-                          className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="completed">Completed</option>
-                          <option value="cancelled">Cancelled</option>
-                        </select>
-                      </Form>
-                      <button className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors">
+                      <button 
+                        onClick={() => {
+                          setShowForm(false);
+                          setEditingAssignment(assignment);
+                        }}
+                        className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                        title="Edit Assignment"
+                      >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
@@ -403,6 +524,7 @@ export default function AssignmentManagement() {
                         <button 
                           type="submit"
                           className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          title="Delete Assignment"
                           onClick={(e) => {
                             if (!confirm('Are you sure you want to delete this assignment?')) {
                               e.preventDefault();

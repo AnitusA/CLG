@@ -33,7 +33,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const title = formData.get('title') as string;
     const content = formData.get('content') as string;
     const category = formData.get('category') as string;
-    const priority = formData.get('priority') as string;
     const visibility = formData.get('visibility') as string;
 
     const { error } = await supabase
@@ -42,11 +41,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         title,
         content,
         category,
-        priority,
-        visibility,
-        status: 'published',
-        created_at: new Date().toISOString(),
-        author: 'Admin'
+        is_visible: visibility === 'visible',
+        publish_date: new Date().toISOString().split('T')[0],
+        created_at: new Date().toISOString()
       });
 
     if (error) {
@@ -255,23 +252,6 @@ export default function DailyUpdates() {
                 </div>
 
                 <div>
-                  <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Priority Level
-                  </label>
-                  <select
-                    id="priority"
-                    name="priority"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  >
-                    <option value="low">Low Priority</option>
-                    <option value="medium">Medium Priority</option>
-                    <option value="high">High Priority</option>
-                    <option value="urgent">🔴 Urgent</option>
-                  </select>
-                </div>
-
-                <div>
                   <label htmlFor="visibility" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Visibility
                   </label>
@@ -367,17 +347,6 @@ export default function DailyUpdates() {
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                           {update.title}
                         </h3>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          update.priority === 'urgent' 
-                            ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                            : update.priority === 'high'
-                            ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400'
-                            : update.priority === 'medium'
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-                            : 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                        }`}>
-                          {update.priority}
-                        </span>
                         <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
                           {update.category}
                         </span>
@@ -391,11 +360,11 @@ export default function DailyUpdates() {
                       </div>
 
                       <div className="flex items-center space-x-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
-                        <span>By {update.author}</span>
+                        <span>By Admin</span>
                         <span>•</span>
                         <span>{new Date(update.created_at).toLocaleString()}</span>
                         <span>•</span>
-                        <span>Visible to: {update.visibility}</span>
+                        <span>Category: {update.category}</span>
                       </div>
 
                       <p className="text-gray-700 dark:text-gray-300 leading-relaxed">

@@ -13,7 +13,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { data: assignments, error } = await supabase
     .from('assignments')
     .select('*')
-    .in('status', ['pending', 'completed'])
+    .in('status', ['active', 'completed'])
     .order('due_date', { ascending: true });
 
   if (error) {
@@ -48,18 +48,7 @@ export default function StudentAssignments() {
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
-      default:
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-    }
-  };
-
-  const pendingAssignments = assignments.filter(a => a.status === 'pending');
+  const activeAssignments = assignments.filter(a => a.status === 'active');
   const completedAssignments = assignments.filter(a => a.status === 'completed');
 
   return (
@@ -98,8 +87,8 @@ export default function StudentAssignments() {
               </svg>
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pending</p>
-              <p className="text-xl font-semibold text-gray-900 dark:text-white">{pendingAssignments.length}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active</p>
+              <p className="text-xl font-semibold text-gray-900 dark:text-white">{activeAssignments.length}</p>
             </div>
           </div>
         </div>
@@ -135,12 +124,12 @@ export default function StudentAssignments() {
         </div>
       </div>
 
-      {/* Pending Assignments */}
-      {pendingAssignments.length > 0 && (
+      {/* Active Assignments */}
+      {activeAssignments.length > 0 && (
         <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">⏰ Pending Assignments</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">⏰ Active Assignments</h2>
           <div className="grid gap-4">
-            {pendingAssignments.map((assignment) => (
+            {activeAssignments.map((assignment) => (
               <div key={assignment.id} className="bg-white/50 dark:bg-slate-700/50 rounded-lg p-6 border border-white/20">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -164,9 +153,6 @@ export default function StudentAssignments() {
                   <div className="flex flex-col space-y-2 ml-4">
                     <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(assignment.status)}`}>
                       {assignment.status}
-                    </span>
-                    <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(assignment.priority)}`}>
-                      {assignment.priority}
                     </span>
                   </div>
                 </div>
@@ -205,9 +191,6 @@ export default function StudentAssignments() {
                   <div className="flex flex-col space-y-2 ml-4">
                     <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(assignment.status)}`}>
                       {assignment.status}
-                    </span>
-                    <span className={`px-2 py-1 text-xs rounded-full ${getPriorityColor(assignment.priority)}`}>
-                      {assignment.priority}
                     </span>
                   </div>
                 </div>

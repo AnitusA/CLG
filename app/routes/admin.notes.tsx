@@ -44,11 +44,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         content,
         subject,
         chapter,
-        topic,
-        visibility,
-        status: 'published',
-        created_at: new Date().toISOString(),
-        author: 'Admin'
+        is_visible: visibility === 'visible',
+        created_at: new Date().toISOString()
       });
 
     if (error) {
@@ -394,7 +391,7 @@ export default function NotesManagement() {
                       </div>
 
                       <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                        <span>By {note.author}</span>
+                        <span>By Admin</span>
                         <span>{new Date(note.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>

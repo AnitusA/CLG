@@ -34,7 +34,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const description = formData.get('description') as string;
     const deadlineDate = formData.get('deadlineDate') as string;
     const category = formData.get('category') as string;
-    const priority = formData.get('priority') as string;
 
     const { error } = await supabase
       .from('deadlines')
@@ -43,7 +42,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         description,
         deadline_date: deadlineDate,
         category,
-        priority,
         status: 'active',
         created_at: new Date().toISOString()
       });
@@ -206,23 +204,6 @@ export default function DeadlineManagement() {
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
                   />
                 </div>
-
-                <div>
-                  <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Priority Level
-                  </label>
-                  <select
-                    id="priority"
-                    name="priority"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  >
-                    <option value="low">Low Priority</option>
-                    <option value="medium">Medium Priority</option>
-                    <option value="high">High Priority</option>
-                    <option value="urgent">Urgent</option>
-                  </select>
-                </div>
               </div>
 
               <div>
@@ -311,17 +292,6 @@ export default function DeadlineManagement() {
                           }`}>
                             {deadline.title}
                           </h3>
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            deadline.priority === 'urgent' 
-                              ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                              : deadline.priority === 'high'
-                              ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400'
-                              : deadline.priority === 'medium'
-                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-                              : 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                          }`}>
-                            {deadline.priority}
-                          </span>
                           <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
                             {deadline.category}
                           </span>
