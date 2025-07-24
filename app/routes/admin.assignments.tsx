@@ -36,6 +36,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const dueDate = formData.get('dueDate') as string;
     const subject = formData.get('subject') as string;
 
+    // Validate required fields
+    if (!title || !description || !dueDate || !subject) {
+      return json({ error: 'All fields are required' }, { status: 400 });
+    }
+
     const { error } = await supabase
       .from('assignments')
       .insert({
@@ -91,6 +96,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const description = formData.get('description') as string;
     const dueDate = formData.get('dueDate') as string;
     const subject = formData.get('subject') as string;
+
+    // Validate required fields
+    if (!title || !description || !dueDate || !subject) {
+      return json({ error: 'All fields are required' }, { status: 400 });
+    }
 
     const { error } = await supabase
       .from('assignments')
@@ -209,7 +219,7 @@ export default function AssignmentManagement() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Assignment Name
+                    Assignment Topic
                   </label>
                   <input
                     type="text"
@@ -217,7 +227,7 @@ export default function AssignmentManagement() {
                     name="title"
                     required
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Enter assignment name..."
+                    placeholder="Enter assignment topic..."
                   />
                 </div>
 
@@ -251,14 +261,15 @@ export default function AssignmentManagement() {
 
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Description <span className="text-gray-500 text-sm">(Optional)</span>
+                  Description
                 </label>
                 <textarea
                   id="description"
                   name="description"
                   rows={4}
+                  required
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  placeholder="Enter assignment description and requirements (optional)..."
+                  placeholder="Enter assignment description and requirements..."
                 />
               </div>
 
@@ -305,7 +316,7 @@ export default function AssignmentManagement() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="edit-title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Assignment Name
+                    Assignment Topic
                   </label>
                   <input
                     type="text"
@@ -314,7 +325,7 @@ export default function AssignmentManagement() {
                     defaultValue={editingAssignment.title}
                     required
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Enter assignment name..."
+                    placeholder="Enter assignment topic..."
                   />
                 </div>
 
@@ -350,15 +361,16 @@ export default function AssignmentManagement() {
 
               <div>
                 <label htmlFor="edit-description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Description <span className="text-gray-500 text-sm">(Optional)</span>
+                  Description
                 </label>
                 <textarea
                   id="edit-description"
                   name="description"
                   rows={4}
                   defaultValue={editingAssignment.description}
+                  required
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  placeholder="Enter assignment description and requirements (optional)..."
+                  placeholder="Enter assignment description and requirements..."
                 />
               </div>
 

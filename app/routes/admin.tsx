@@ -43,7 +43,7 @@ export default function AdminDashboard() {
       iconBg: 'bg-blue-500'
     },
     {
-      name: 'Record Ending Date',
+      name: 'Records',
       description: 'Set and track important deadlines',
       icon: '📅',
       href: '/admin/deadlines',
@@ -79,8 +79,8 @@ export default function AdminDashboard() {
       iconBg: 'bg-indigo-500'
     },
     {
-      name: 'Test Updates',
-      description: 'Schedule and manage test announcements',
+      name: 'Exam Schedules',
+      description: 'Schedule and manage exam announcements',
       icon: '📊',
       href: '/admin/tests',
       color: 'from-red-600 to-red-800',
@@ -113,6 +113,24 @@ export default function AdminDashboard() {
       color: 'from-violet-600 to-violet-800',
       bgColor: 'bg-violet-50',
       iconBg: 'bg-violet-500'
+    },
+    {
+      name: 'Events',
+      description: 'Manage college events and activities',
+      icon: '🎪',
+      href: '/admin/events',
+      color: 'from-cyan-600 to-cyan-800',
+      bgColor: 'bg-cyan-50',
+      iconBg: 'bg-cyan-500'
+    },
+    {
+      name: 'Calendar',
+      description: 'View all dates and events in calendar format',
+      icon: '📅',
+      href: '/admin/calendar',
+      color: 'from-indigo-600 to-indigo-800',
+      bgColor: 'bg-indigo-50',
+      iconBg: 'bg-indigo-500'
     }
   ];
 
