@@ -30,23 +30,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const intent = formData.get('intent');
 
   if (intent === 'create') {
-    const title = formData.get('title') as string;
     const subject = formData.get('subject') as string;
     const description = formData.get('description') as string;
     const assignedDate = formData.get('assignedDate') as string;
-    const dueDate = formData.get('dueDate') as string;
-    const difficulty = formData.get('difficulty') as string;
+
+    // Validate required fields
+    if (!subject || !description || !assignedDate) {
+      return json({ error: 'All fields are required' }, { status: 400 });
+    }
 
     const { error } = await supabase
       .from('homework')
       .insert({
-        title,
         subject,
         description,
         assignment_date: assignedDate,
-        due_date: dueDate,
-        difficulty,
-        status: 'pending', // Set as pending so it shows up on student dashboard
+        status: 'pending',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
@@ -106,6 +105,33 @@ export default function HomeworkManagement() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   const isSubmitting = navigation.state === 'submitting';
+
+  // Helper function to format date intelligently
+  const formatDateDisplay = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    const tomorrow = new Date(today);
+    
+    yesterday.setDate(today.getDate() - 1);
+    tomorrow.setDate(today.getDate() + 1);
+    
+    // Reset time to compare dates only
+    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const yesterdayOnly = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
+    const tomorrowOnly = new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
+    
+    if (dateOnly.getTime() === todayOnly.getTime()) {
+      return "Today";
+    } else if (dateOnly.getTime() === yesterdayOnly.getTime()) {
+      return "Yesterday";
+    } else if (dateOnly.getTime() === tomorrowOnly.getTime()) {
+      return "Tomorrow";
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
 
   const getTodaysHomework = () => {
     const today = new Date().toISOString().split('T')[0];
@@ -225,44 +251,22 @@ export default function HomeworkManagement() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Homework Title
-                  </label>
-                  <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Enter homework title..."
-                  />
-                </div>
-
-                <div>
                   <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Subject
                   </label>
-                  <select
+                  <input
+                    type="text"
                     id="subject"
                     name="subject"
                     required
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  >
-                    <option value="">Select Subject</option>
-                    <option value="Mathematics">Mathematics</option>
-                    <option value="Physics">Physics</option>
-                    <option value="Chemistry">Chemistry</option>
-                    <option value="Computer Science">Computer Science</option>
-                    <option value="English">English</option>
-                    <option value="Biology">Biology</option>
-                    <option value="History">History</option>
-                    <option value="Geography">Geography</option>
-                  </select>
+                    placeholder="Enter subject name..."
+                  />
                 </div>
 
                 <div>
                   <label htmlFor="assignedDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Assigned Date
+                    Date
                   </label>
                   <input
                     type="date"
@@ -273,41 +277,11 @@ export default function HomeworkManagement() {
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
                   />
                 </div>
-
-                <div>
-                  <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Due Date
-                  </label>
-                  <input
-                    type="date"
-                    id="dueDate"
-                    name="dueDate"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label htmlFor="difficulty" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Difficulty Level
-                  </label>
-                  <select
-                    id="difficulty"
-                    name="difficulty"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  >
-                    <option value="easy">Easy (15-30 mins)</option>
-                    <option value="medium">Medium (30-60 mins)</option>
-                    <option value="hard">Hard (1-2 hours)</option>
-                    <option value="challenging">Challenging (2+ hours)</option>
-                  </select>
-                </div>
               </div>
 
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Homework Description & Instructions
+                  Description
                 </label>
                 <textarea
                   id="description"
@@ -315,7 +289,7 @@ export default function HomeworkManagement() {
                   rows={4}
                   required
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  placeholder="Enter detailed homework instructions, chapter references, page numbers, etc..."
+                  placeholder="Enter homework description and instructions..."
                 />
               </div>
 
@@ -371,7 +345,7 @@ export default function HomeworkManagement() {
                 </svg>
               </div>
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No homework assigned yet</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">Start assigning daily homework to students.</p>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">Start assigning daily homework with subjects and descriptions.</p>
               <button
                 onClick={() => setShowForm(true)}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
@@ -391,22 +365,8 @@ export default function HomeworkManagement() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center space-x-3 mb-3">
-                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                            {hw.title}
-                          </h3>
                           <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
                             {hw.subject}
-                          </span>
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            hw.difficulty === 'challenging' 
-                              ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                              : hw.difficulty === 'hard'
-                              ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400'
-                              : hw.difficulty === 'medium'
-                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-                              : 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                          }`}>
-                            {hw.difficulty}
                           </span>
                           <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                             hw.status === 'completed' 
@@ -416,6 +376,9 @@ export default function HomeworkManagement() {
                               : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
                           }`}>
                             {hw.status}
+                          </span>
+                          <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                            {formatDateDisplay(hw.assignment_date)}
                           </span>
                         </div>
 
@@ -428,13 +391,7 @@ export default function HomeworkManagement() {
                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
-                            Assigned: {new Date(hw.assignment_date).toLocaleDateString()}
-                          </span>
-                          <span className="flex items-center">
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            Due: {new Date(hw.due_date).toLocaleDateString()}
+                            Created: {new Date(hw.created_at).toLocaleDateString()}
                           </span>
                         </div>
                       </div>

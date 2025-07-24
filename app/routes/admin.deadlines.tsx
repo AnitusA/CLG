@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { requireAdmin } from '~/lib/session.server';
 import { supabase } from '~/lib/supabase.server';
 
-export const meta: MetaFunction = () => [{ title: 'Deadline Management - Admin Dashboard' }];
+export const meta: MetaFunction = () => [{ title: 'Records Management - Admin Dashboard' }];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await requireAdmin(request);
@@ -30,18 +30,21 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const intent = formData.get('intent');
 
   if (intent === 'create') {
-    const title = formData.get('title') as string;
+    const subject = formData.get('subject') as string;
     const description = formData.get('description') as string;
-    const deadlineDate = formData.get('deadlineDate') as string;
-    const category = formData.get('category') as string;
+    const dueDate = formData.get('dueDate') as string;
+
+    // Validate required fields
+    if (!subject || !description || !dueDate) {
+      return json({ error: 'All fields are required' }, { status: 400 });
+    }
 
     const { error } = await supabase
       .from('deadlines')
       .insert({
-        title,
+        subject,
         description,
-        deadline_date: deadlineDate,
-        category,
+        deadline_date: dueDate,
         status: 'active',
         created_at: new Date().toISOString()
       });
@@ -130,7 +133,7 @@ export default function DeadlineManagement() {
               </Link>
               <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                📅 Deadline Management
+                📅 Records Management
               </h1>
             </div>
             
@@ -141,7 +144,7 @@ export default function DeadlineManagement() {
               <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              New Deadline
+              New Record
             </button>
           </div>
         </div>
@@ -151,55 +154,34 @@ export default function DeadlineManagement() {
         {/* Create Deadline Form */}
         {showForm && (
           <div className="mb-8 bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Set New Deadline</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Create New Record</h2>
             
             <Form method="post" className="space-y-6">
               <input type="hidden" name="intent" value="create" />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Deadline Title
+                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Subject
                   </label>
                   <input
                     type="text"
-                    id="title"
-                    name="title"
+                    id="subject"
+                    name="subject"
                     required
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Enter deadline title..."
+                    placeholder="Enter subject name..."
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Category
-                  </label>
-                  <select
-                    id="category"
-                    name="category"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  >
-                    <option value="">Select Category</option>
-                    <option value="assignment">Assignment Submission</option>
-                    <option value="project">Project Deadline</option>
-                    <option value="exam">Exam Registration</option>
-                    <option value="application">Application Deadline</option>
-                    <option value="fee">Fee Payment</option>
-                    <option value="event">Event Registration</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="deadlineDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Deadline Date & Time
+                  <label htmlFor="dueDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Due Date
                   </label>
                   <input
-                    type="datetime-local"
-                    id="deadlineDate"
-                    name="deadlineDate"
+                    type="date"
+                    id="dueDate"
+                    name="dueDate"
                     required
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
                   />
@@ -208,7 +190,7 @@ export default function DeadlineManagement() {
 
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Description & Instructions
+                  Description
                 </label>
                 <textarea
                   id="description"
@@ -216,7 +198,7 @@ export default function DeadlineManagement() {
                   rows={4}
                   required
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  placeholder="Enter deadline description and any special instructions..."
+                  placeholder="Enter description and requirements..."
                 />
               </div>
 
@@ -233,7 +215,7 @@ export default function DeadlineManagement() {
                   disabled={isSubmitting}
                   className="px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg hover:from-purple-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Creating...' : 'Set Deadline'}
+                  {isSubmitting ? 'Creating...' : 'Create Record'}
                 </button>
               </div>
             </Form>
@@ -246,12 +228,12 @@ export default function DeadlineManagement() {
           </div>
         )}
 
-        {/* Deadlines List */}
+        {/* Records List */}
         <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">All Deadlines</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">All Records</h2>
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              {deadlines.length} deadline{deadlines.length !== 1 ? 's' : ''} tracked
+              {deadlines.length} record{deadlines.length !== 1 ? 's' : ''} tracked
             </span>
           </div>
 
@@ -262,13 +244,13 @@ export default function DeadlineManagement() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No deadlines set</h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">Set your first deadline to start tracking important dates.</p>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No records set</h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">Set your first record to start tracking important deadlines.</p>
               <button
                 onClick={() => setShowForm(true)}
                 className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700"
               >
-                Set First Deadline
+                Set First Record
               </button>
             </div>
           ) : (
@@ -290,11 +272,8 @@ export default function DeadlineManagement() {
                               ? 'line-through text-gray-500 dark:text-gray-400' 
                               : 'text-gray-900 dark:text-white'
                           }`}>
-                            {deadline.title}
+                            {deadline.subject}
                           </h3>
-                          <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
-                            {deadline.category}
-                          </span>
                         </div>
 
                         <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
@@ -307,7 +286,7 @@ export default function DeadlineManagement() {
                               <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
-                              {new Date(deadline.deadline_date).toLocaleString()}
+                              {new Date(deadline.deadline_date).toLocaleDateString()}
                             </span>
                             <span className={`font-medium ${timeRemaining.color}`}>
                               {timeRemaining.text}
@@ -347,7 +326,7 @@ export default function DeadlineManagement() {
                                 type="submit"
                                 className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                 onClick={(e) => {
-                                  if (!confirm('Are you sure you want to delete this deadline?')) {
+                                  if (!confirm('Are you sure you want to delete this record?')) {
                                     e.preventDefault();
                                   }
                                 }}

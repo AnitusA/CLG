@@ -30,40 +30,24 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const intent = formData.get('intent');
 
   if (intent === 'create') {
+    const subject = formData.get('subject') as string;
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
-    const speaker = formData.get('speaker') as string;
-    const speakerBio = formData.get('speakerBio') as string;
     const seminarDate = formData.get('seminarDate') as string;
-    const startTime = formData.get('startTime') as string;
-    const endTime = formData.get('endTime') as string;
-    const location = formData.get('location') as string;
-    const capacity = formData.get('capacity') as string;
-    const category = formData.get('category') as string;
-    const registrationRequired = formData.get('registrationRequired') === 'true';
-    const registrationDeadline = formData.get('registrationDeadline') as string;
-    const requirements = formData.get('requirements') as string;
-    const materials = formData.get('materials') as string;
+
+    // Validate required fields
+    if (!subject || !title || !description || !seminarDate) {
+      return json({ error: 'All fields are required' }, { status: 400 });
+    }
 
     const { error } = await supabase
       .from('seminars')
       .insert({
+        subject,
         title,
         description,
-        speaker,
-        speaker_bio: speakerBio,
         seminar_date: seminarDate,
-        start_time: startTime,
-        end_time: endTime,
-        location,
-        capacity: capacity ? parseInt(capacity) : null,
-        category,
-        registration_required: registrationRequired,
-        registration_deadline: registrationDeadline || null,
-        requirements,
-        materials,
         status: 'scheduled',
-        registered_count: 0,
         created_at: new Date().toISOString()
       });
 
@@ -273,15 +257,42 @@ export default function SeminarManagement() {
         {/* Create Seminar Form */}
         {showForm && (
           <div className="mb-8 bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Schedule New Seminar</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Create New Seminar</h2>
             
             <Form method="post" className="space-y-6">
               <input type="hidden" name="intent" value="create" />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Subject
+                  </label>
+                  <input
+                    type="text"
+                    id="subject"
+                    name="subject"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                    placeholder="Enter subject name..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="seminarDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Seminar Date
+                  </label>
+                  <input
+                    type="date"
+                    id="seminarDate"
+                    name="seminarDate"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                  />
+                </div>
+
                 <div className="md:col-span-2">
                   <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Seminar Title
+                    Title
                   </label>
                   <input
                     type="text"
@@ -300,175 +311,10 @@ export default function SeminarManagement() {
                   <textarea
                     id="description"
                     name="description"
-                    rows={3}
+                    rows={4}
                     required
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
                     placeholder="Describe the seminar content and objectives..."
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="speaker" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Speaker Name
-                  </label>
-                  <input
-                    type="text"
-                    id="speaker"
-                    name="speaker"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Enter speaker name..."
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="speakerBio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Speaker Bio
-                  </label>
-                  <input
-                    type="text"
-                    id="speakerBio"
-                    name="speakerBio"
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Brief speaker biography..."
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="seminarDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    id="seminarDate"
-                    name="seminarDate"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Start Time
-                  </label>
-                  <input
-                    type="time"
-                    id="startTime"
-                    name="startTime"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    End Time
-                  </label>
-                  <input
-                    type="time"
-                    id="endTime"
-                    name="endTime"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Location
-                  </label>
-                  <input
-                    type="text"
-                    id="location"
-                    name="location"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Venue or online platform..."
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="capacity" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Capacity (Optional)
-                  </label>
-                  <input
-                    type="number"
-                    id="capacity"
-                    name="capacity"
-                    min="1"
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Maximum attendees..."
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Category
-                  </label>
-                  <select
-                    id="category"
-                    name="category"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  >
-                    <option value="">Select Category</option>
-                    <option value="technical">Technical</option>
-                    <option value="career">Career Development</option>
-                    <option value="research">Research</option>
-                    <option value="industry">Industry Insights</option>
-                    <option value="academic">Academic</option>
-                    <option value="entrepreneurship">Entrepreneurship</option>
-                  </select>
-                </div>
-
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="registrationRequired"
-                    name="registrationRequired"
-                    value="true"
-                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                  />
-                  <label htmlFor="registrationRequired" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                    Registration Required
-                  </label>
-                </div>
-
-                <div>
-                  <label htmlFor="registrationDeadline" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Registration Deadline (Optional)
-                  </label>
-                  <input
-                    type="date"
-                    id="registrationDeadline"
-                    name="registrationDeadline"
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="requirements" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Requirements (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    id="requirements"
-                    name="requirements"
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Prerequisites or requirements..."
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="materials" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Materials (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    id="materials"
-                    name="materials"
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Required materials or resources..."
                   />
                 </div>
               </div>
@@ -486,7 +332,7 @@ export default function SeminarManagement() {
                   disabled={isSubmitting}
                   className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Scheduling...' : 'Schedule Seminar'}
+                  {isSubmitting ? 'Creating...' : 'Create Seminar'}
                 </button>
               </div>
             </Form>
@@ -560,9 +406,6 @@ export default function SeminarManagement() {
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(seminar.status)}`}>
                           {seminar.status}
                         </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(seminar.category)}`}>
-                          {seminar.category}
-                        </span>
                       </div>
                       
                       <p className="text-gray-600 dark:text-gray-400 mb-3">{seminar.description}</p>
@@ -570,30 +413,16 @@ export default function SeminarManagement() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center">
                           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                           </svg>
-                          Speaker: {seminar.speaker}
+                          Subject: {seminar.subject}
                         </div>
                         <div className="flex items-center">
                           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
-                          {formatDateTime(seminar.seminar_date, seminar.start_time)} - {seminar.end_time}
+                          Date: {new Date(seminar.seminar_date).toLocaleDateString()}
                         </div>
-                        <div className="flex items-center">
-                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          </svg>
-                          {seminar.location}
-                        </div>
-                        {seminar.capacity && (
-                          <div className="flex items-center">
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                            {seminar.registered_count || 0} / {seminar.capacity} registered
-                          </div>
-                        )}
                       </div>
                     </div>
 

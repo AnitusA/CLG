@@ -1,12 +1,12 @@
-import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
+import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
 import { useState } from 'react';
 
-import { requireStudentAuth } from '~/lib/session.server';
+import { requireAdmin } from '~/lib/session.server';
 import { supabase } from '~/lib/supabase.server';
 
-export const meta: MetaFunction = () => [{ title: 'Academic Calendar - Student Portal' }];
+export const meta: MetaFunction = () => [{ title: 'Calendar View - Admin Dashboard' }];
 
 interface CalendarEvent {
   id: string;
@@ -20,7 +20,7 @@ interface CalendarEvent {
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  await requireStudentAuth(request);
+  await requireAdmin(request);
 
   const calendarEvents: CalendarEvent[] = [];
 
@@ -147,7 +147,7 @@ const MONTHS = [
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-export default function StudentCalendar() {
+export default function AdminCalendar() {
   const { calendarEvents, tablesNotCreated } = useLoaderData<typeof loader>();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -232,18 +232,6 @@ export default function StudentCalendar() {
     return type.charAt(0).toUpperCase() + type.slice(1);
   };
 
-  // Get upcoming events (next 7 days)
-  const getUpcomingEvents = () => {
-    const today = new Date();
-    const nextWeek = new Date();
-    nextWeek.setDate(today.getDate() + 7);
-    
-    return calendarEvents.filter(event => {
-      const eventDate = new Date(event.date);
-      return eventDate >= today && eventDate <= nextWeek;
-    }).slice(0, 5);
-  };
-
   if (tablesNotCreated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-blue-900/20 dark:to-slate-900">
@@ -252,7 +240,7 @@ export default function StudentCalendar() {
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center space-x-4">
                 <Link 
-                  to="/student" 
+                  to="/admin" 
                   className="flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -279,10 +267,10 @@ export default function StudentCalendar() {
               </div>
               <div className="ml-3">
                 <h3 className="text-lg font-medium text-yellow-800 dark:text-yellow-200">
-                  Calendar Not Available
+                  Database Setup Required
                 </h3>
                 <p className="mt-2 text-yellow-700 dark:text-yellow-300">
-                  The calendar data is not available yet. Please contact your administrator to set up the academic calendar.
+                  The calendar requires database tables from other sections to be created first. Please set up the Events, Tests, Assignments, Seminars, and Deadlines sections.
                 </p>
               </div>
             </div>
@@ -300,7 +288,7 @@ export default function StudentCalendar() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <Link 
-                to="/student" 
+                to="/admin" 
                 className="flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -414,35 +402,6 @@ export default function StudentCalendar() {
 
           {/* Side Panel */}
           <div className="space-y-6">
-            {/* Upcoming Events */}
-            <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Upcoming This Week</h3>
-              {getUpcomingEvents().length === 0 ? (
-                <p className="text-gray-600 dark:text-gray-400 text-sm">No upcoming events</p>
-              ) : (
-                <div className="space-y-3">
-                  {getUpcomingEvents().map((event, index) => (
-                    <div key={index} className="flex items-start space-x-3 p-3 rounded-lg bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-gray-600">
-                      <div className={`w-2 h-2 ${event.color} rounded-full mt-1.5 flex-shrink-0`}></div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                          {getTypeIcon(event.type)} {event.title}
-                        </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400">
-                          {new Date(event.date).toLocaleDateString()}
-                        </div>
-                        {event.description && (
-                          <div className="text-xs text-gray-500 dark:text-gray-500 mt-1 truncate">
-                            {event.description}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* Legend */}
             <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Legend</h3>
@@ -500,9 +459,33 @@ export default function StudentCalendar() {
                               </span>
                             </div>
                             {event.description && (
-                              <p className="text-xs text-gray-600 dark:text-gray-400">
+                              <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">
                                 {event.description}
                               </p>
+                            )}
+                            {event.status && (
+                              <div className="flex items-center space-x-2">
+                                <span className="text-xs text-gray-500 dark:text-gray-500">Status:</span>
+                                <span className={`text-xs px-1.5 py-0.5 rounded ${
+                                  event.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400' :
+                                  event.status === 'upcoming' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400' :
+                                  'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                                }`}>
+                                  {event.status}
+                                </span>
+                              </div>
+                            )}
+                            {event.priority && (
+                              <div className="flex items-center space-x-2 mt-1">
+                                <span className="text-xs text-gray-500 dark:text-gray-500">Priority:</span>
+                                <span className={`text-xs px-1.5 py-0.5 rounded ${
+                                  event.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400' :
+                                  event.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400' :
+                                  'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                                }`}>
+                                  {event.priority}
+                                </span>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -512,6 +495,43 @@ export default function StudentCalendar() {
                 )}
               </div>
             )}
+
+            {/* Quick Stats */}
+            <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Stats</h3>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">🎪 Events</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {calendarEvents.filter(e => e.type === 'event').length}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">📝 Tests</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {calendarEvents.filter(e => e.type === 'test').length}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">📋 Assignments</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {calendarEvents.filter(e => e.type === 'assignment').length}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">🎤 Seminars</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {calendarEvents.filter(e => e.type === 'seminar').length}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600 dark:text-gray-400">⏰ Deadlines</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {calendarEvents.filter(e => e.type === 'deadline').length}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>

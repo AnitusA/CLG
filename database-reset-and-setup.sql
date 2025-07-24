@@ -274,6 +274,92 @@ CREATE POLICY "Enable all operations for service role" ON birthdays
 CREATE POLICY "Enable all operations for service role" ON seminars
     FOR ALL USING (auth.role() = 'service_role');
 
+-- 11. Create exams table (for exam schedules feature)
+CREATE TABLE exams (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    exam_name TEXT NOT NULL,
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'completed')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 12. Create exam_subjects table (for individual subjects under each exam)
+CREATE TABLE exam_subjects (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    exam_id UUID NOT NULL REFERENCES exams(id) ON DELETE CASCADE,
+    subject TEXT NOT NULL,
+    exam_date DATE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 13. Create events table (for college events management)
+CREATE TABLE events (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    event_name TEXT NOT NULL,
+    event_date DATE NOT NULL,
+    description TEXT NOT NULL,
+    status VARCHAR(20) DEFAULT 'upcoming' CHECK (status IN ('upcoming', 'ongoing', 'completed', 'cancelled')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create additional indexes for exam tables
+CREATE INDEX idx_exams_status ON exams(status);
+CREATE INDEX idx_exams_created_at ON exams(created_at);
+CREATE INDEX idx_exam_subjects_exam_id ON exam_subjects(exam_id);
+CREATE INDEX idx_exam_subjects_exam_date ON exam_subjects(exam_date);
+
+-- Create indexes for events table
+CREATE INDEX idx_events_event_date ON events(event_date);
+CREATE INDEX idx_events_status ON events(status);
+
+-- Create triggers for exam tables
+CREATE TRIGGER update_exams_updated_at 
+    BEFORE UPDATE ON exams 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_exam_subjects_updated_at 
+    BEFORE UPDATE ON exam_subjects 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Create trigger for events table
+CREATE TRIGGER update_events_updated_at 
+    BEFORE UPDATE ON events 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Enable Row Level Security for exam and events tables
+ALTER TABLE exams ENABLE ROW LEVEL SECURITY;
+ALTER TABLE exam_subjects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+
+-- Create policies for exam tables
+CREATE POLICY "Enable all operations for service role" ON exams
+    FOR ALL 
+    TO service_role 
+    USING (true) 
+    WITH CHECK (true);
+
+CREATE POLICY "Enable all operations for service role" ON exam_subjects
+    FOR ALL 
+    TO service_role 
+    USING (true) 
+    WITH CHECK (true);
+
+CREATE POLICY "Enable all operations for service role" ON events
+    FOR ALL 
+    TO service_role 
+    USING (true) 
+    WITH CHECK (true);
+
+-- Grant permissions for exam and events tables
+GRANT ALL ON exams TO service_role;
+GRANT ALL ON exam_subjects TO service_role;
+GRANT ALL ON events TO service_role;
+
 -- Insert some sample data for testing (optional)
 INSERT INTO students (register_number, password_hash) VALUES 
 ('ADMIN001', '$2a$10$example.hash.for.admin'),
