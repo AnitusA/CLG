@@ -10,14 +10,14 @@ export const meta: MetaFunction = () => [{ title: 'Academic Record - Student Das
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await requireStudent(request);
 
-  // Fetch student academic records
+  // Fetch general records for students
   const { data: records, error } = await supabase
-    .from('academic_records')
+    .from('records')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('record_date', { ascending: false });
 
   if (error) {
-    console.error('Error fetching academic records:', error);
+    console.error('Error fetching records:', error);
   }
 
   return json({ records: records || [] });
@@ -51,13 +51,13 @@ export default function StudentRecord() {
             {records.map((record: any) => (
               <div key={record.id} className="bg-white/50 dark:bg-slate-700/50 rounded-xl p-6 border border-white/20">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  {record.title}
+                  {record.subject}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 text-sm">
                   {record.description}
                 </p>
                 <div className="mt-4 text-xs text-gray-500 dark:text-gray-400">
-                  {new Date(record.created_at).toLocaleDateString()}
+                  {new Date(record.record_date).toLocaleDateString()}
                 </div>
               </div>
             ))}

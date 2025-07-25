@@ -46,7 +46,7 @@ export default function AdminDashboard() {
       name: 'Records',
       description: 'Set and track important deadlines',
       icon: '📅',
-      href: '/admin/deadlines',
+      href: '/admin/record',
       color: 'from-purple-600 to-purple-800',
       bgColor: 'bg-purple-50',
       iconBg: 'bg-purple-500'
@@ -86,15 +86,6 @@ export default function AdminDashboard() {
       color: 'from-red-600 to-red-800',
       bgColor: 'bg-red-50',
       iconBg: 'bg-red-500'
-    },
-    {
-      name: 'Syllabus',
-      description: 'Update and manage course syllabus',
-      icon: '📖',
-      href: '/admin/syllabus',
-      color: 'from-teal-600 to-teal-800',
-      bgColor: 'bg-teal-50',
-      iconBg: 'bg-teal-500'
     },
     {
       name: 'Birthday Dates',

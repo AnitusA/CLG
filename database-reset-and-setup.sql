@@ -63,13 +63,9 @@ CREATE TABLE deadlines (
 -- 4. Create homework table
 CREATE TABLE homework (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    title TEXT NOT NULL,
     description TEXT NOT NULL,
     subject VARCHAR(100) NOT NULL,
-    assignment_date DATE NOT NULL,
-    due_date DATE NOT NULL,
-    difficulty VARCHAR(20) DEFAULT 'medium' CHECK (difficulty IN ('easy', 'medium', 'hard')),
-    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'overdue')),
+    homework_date DATE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -171,7 +167,7 @@ CREATE INDEX idx_assignments_subject ON assignments(subject);
 CREATE INDEX idx_assignments_due_date ON assignments(due_date);
 CREATE INDEX idx_deadlines_deadline_date ON deadlines(deadline_date);
 CREATE INDEX idx_homework_subject ON homework(subject);
-CREATE INDEX idx_homework_assignment_date ON homework(assignment_date);
+CREATE INDEX idx_homework_homework_date ON homework(homework_date);
 CREATE INDEX idx_daily_updates_publish_date ON daily_updates(publish_date);
 CREATE INDEX idx_notes_subject ON notes(subject);
 CREATE INDEX idx_tests_subject ON tests(subject);

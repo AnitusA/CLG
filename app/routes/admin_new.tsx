@@ -41,7 +41,7 @@ export default function AdminDashboard() {
       name: 'Record Ending Date',
       description: 'Set and track important deadlines',
       icon: '📅',
-      href: '/admin/deadlines',
+      href: '/admin/records',
       color: 'from-purple-600 to-purple-800',
       bgColor: 'bg-purple-50',
       iconBg: 'bg-purple-500'

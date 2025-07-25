@@ -14,7 +14,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { data: homework, error } = await supabase
     .from('homework')
     .select('*')
-    .order('assignment_date', { ascending: false });
+    .order('homework_date', { ascending: false });
 
   if (error) {
     console.error('Error fetching homework:', error);
@@ -25,17 +25,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   await requireAdmin(request);
-
   const formData = await request.formData();
   const intent = formData.get('intent');
 
   if (intent === 'create') {
     const subject = formData.get('subject') as string;
     const description = formData.get('description') as string;
-    const assignedDate = formData.get('assignedDate') as string;
+    const homeworkDate = formData.get('assignedDate') as string;
 
     // Validate required fields
-    if (!subject || !description || !assignedDate) {
+    if (!subject || !description || !homeworkDate) {
       return json({ error: 'All fields are required' }, { status: 400 });
     }
 
@@ -44,14 +43,41 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       .insert({
         subject,
         description,
-        assignment_date: assignedDate,
-        status: 'pending',
+        homework_date: homeworkDate,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       });
 
     if (error) {
       console.error('Error creating homework:', error);
+      return json({ error: error.message }, { status: 400 });
+    }
+
+    return redirect('/admin/homework');
+  }
+
+  if (intent === 'update') {
+    const homeworkId = formData.get('homeworkId') as string;
+    const subject = formData.get('subject') as string;
+    const description = formData.get('description') as string;
+    const homeworkDate = formData.get('assignedDate') as string;
+
+    if (!homeworkId || !subject || !description || !homeworkDate) {
+      return json({ error: 'All fields are required' }, { status: 400 });
+    }
+
+    const { error } = await supabase
+      .from('homework')
+      .update({
+        subject,
+        description,
+        homework_date: homeworkDate,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', homeworkId);
+
+    if (error) {
+      console.error('Error updating homework:', error);
       return json({ error: error.message }, { status: 400 });
     }
 
@@ -74,25 +100,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return redirect('/admin/homework');
   }
 
-  if (intent === 'updateStatus') {
-    const homeworkId = formData.get('homeworkId') as string;
-    const newStatus = formData.get('status') as string;
-    
-    const { error } = await supabase
-      .from('homework')
-      .update({ 
-        status: newStatus,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', homeworkId);
-
-    if (error) {
-      console.error('Error updating homework status:', error);
-      return json({ error: error.message }, { status: 400 });
-    }
-
-    return redirect('/admin/homework');
-  }
+  // No status column in homework table anymore, so remove status update logic
 
   return json({ error: 'Invalid action' }, { status: 400 });
 };
@@ -103,6 +111,7 @@ export default function HomeworkManagement() {
   const navigation = useNavigation();
   const [showForm, setShowForm] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [editingHomework, setEditingHomework] = useState<any>(null);
 
   const isSubmitting = navigation.state === 'submitting';
 
@@ -135,11 +144,11 @@ export default function HomeworkManagement() {
 
   const getTodaysHomework = () => {
     const today = new Date().toISOString().split('T')[0];
-    return homework.filter(hw => hw.assignment_date === today);
+    return homework.filter(hw => hw.homework_date === today);
   };
 
   const getHomeworkByDate = (date: string) => {
-    return homework.filter(hw => hw.assignment_date === date);
+    return homework.filter(hw => hw.homework_date === date);
   };
 
   return (
@@ -241,14 +250,15 @@ export default function HomeworkManagement() {
           </div>
         </div>
 
-        {/* Create Homework Form */}
-        {showForm && (
+        {/* Create/Edit Homework Form */}
+        {(showForm || editingHomework) && (
           <div className="mb-8 bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Assign New Homework</h2>
-            
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{editingHomework ? 'Edit Homework' : 'Assign New Homework'}</h2>
             <Form method="post" className="space-y-6">
-              <input type="hidden" name="intent" value="create" />
-              
+              <input type="hidden" name="intent" value={editingHomework ? 'update' : 'create'} />
+              {editingHomework && (
+                <input type="hidden" name="homeworkId" value={editingHomework.id} />
+              )}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -259,11 +269,11 @@ export default function HomeworkManagement() {
                     id="subject"
                     name="subject"
                     required
+                    defaultValue={editingHomework ? editingHomework.subject : ''}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
                     placeholder="Enter subject name..."
                   />
                 </div>
-
                 <div>
                   <label htmlFor="assignedDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Date
@@ -273,12 +283,11 @@ export default function HomeworkManagement() {
                     id="assignedDate"
                     name="assignedDate"
                     required
-                    defaultValue={new Date().toISOString().split('T')[0]}
+                    defaultValue={editingHomework ? editingHomework.homework_date : new Date().toISOString().split('T')[0]}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
-
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Description
@@ -288,15 +297,15 @@ export default function HomeworkManagement() {
                   name="description"
                   rows={4}
                   required
+                  defaultValue={editingHomework ? editingHomework.description : ''}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
                   placeholder="Enter homework description and instructions..."
                 />
               </div>
-
               <div className="flex justify-end space-x-4">
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
+                  onClick={() => { setShowForm(false); setEditingHomework(null); }}
                   className="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                 >
                   Cancel
@@ -306,11 +315,10 @@ export default function HomeworkManagement() {
                   disabled={isSubmitting}
                   className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Assigning...' : 'Assign Homework'}
+                  {isSubmitting ? (editingHomework ? 'Updating...' : 'Assigning...') : (editingHomework ? 'Update Homework' : 'Assign Homework')}
                 </button>
               </div>
             </Form>
-
             {actionData?.error && (
               <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
                 <p className="text-red-600 dark:text-red-400">{actionData.error}</p>
@@ -368,17 +376,8 @@ export default function HomeworkManagement() {
                           <span className="px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400">
                             {hw.subject}
                           </span>
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            hw.status === 'completed' 
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                              : hw.status === 'pending'
-                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
-                              : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
-                          }`}>
-                            {hw.status}
-                          </span>
                           <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                            {formatDateDisplay(hw.assignment_date)}
+                            {formatDateDisplay(hw.homework_date)}
                           </span>
                         </div>
 
@@ -397,23 +396,15 @@ export default function HomeworkManagement() {
                       </div>
 
                       <div className="flex items-center space-x-2 ml-4">
-                        {/* Status Update Dropdown */}
-                        <Form method="post" className="inline">
-                          <input type="hidden" name="intent" value="updateStatus" />
-                          <input type="hidden" name="homeworkId" value={hw.id} />
-                          <select
-                            name="status"
-                            onChange={(e) => e.target.form?.requestSubmit()}
-                            defaultValue={hw.status}
-                            className="px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="completed">Completed</option>
-                            <option value="cancelled">Cancelled</option>
-                          </select>
-                        </Form>
-
-                        <button className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors" title="Edit homework">
+                            {/* Status Update Dropdown removed, no status column in homework table */}
+                        <button
+                          className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                          title="Edit homework"
+                          onClick={() => {
+                            setEditingHomework(hw);
+                            setShowForm(false);
+                          }}
+                        >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
