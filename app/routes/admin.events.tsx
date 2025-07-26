@@ -11,34 +11,16 @@ export const meta: MetaFunction = () => [{ title: 'Events Management - Admin Das
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await requireAdmin(request);
 
-  try {
-    const { data: events, error: eventsError } = await supabase
-      .from('events')
-      .select('*')
-      .order('event_date', { ascending: true });
+  const { data: events, error } = await supabase
+    .from('events')
+    .select('*')
+    .order('event_date', { ascending: true });
 
-    if (eventsError) {
-      console.error('Error fetching events:', eventsError);
-      // If tables don't exist, return empty data
-      return json({ 
-        events: [], 
-        tablesNotCreated: true,
-        error: 'Database tables not created yet. Please run the SQL migration.'
-      });
-    }
-
-    return json({ 
-      events: events || [], 
-      tablesNotCreated: false
-    });
-  } catch (error) {
-    console.error('Database connection error:', error);
-    return json({ 
-      events: [], 
-      tablesNotCreated: true,
-      error: 'Database connection issue. Please check your setup.'
-    });
+  if (error) {
+    console.error('Error fetching events:', error);
   }
+
+  return json({ events: events || [] });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -54,37 +36,24 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     // Validate required fields
     if (!eventName || !eventDate || !description) {
-      return json({ error: 'All fields are required' }, { status: 400 });
+      return json({ error: 'Event title, date, and description are required' }, { status: 400 });
     }
 
-    try {
-      const { error } = await supabase
-        .from('events')
-        .insert({
-          event_name: eventName,
-          event_date: eventDate,
-          description,
-          status: 'upcoming',
-          created_at: new Date().toISOString()
-        });
+    const { error } = await supabase
+      .from('events')
+      .insert({
+        event_name: eventName,
+        event_date: eventDate,
+        description,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      });
 
-      if (error) {
-        if (error.message.includes('relation "events" does not exist')) {
-          return json({ 
-            error: 'Database tables not created yet. Please run the SQL migration first.',
-            tablesNotCreated: true 
-          }, { status: 400 });
-        }
-        return json({ error: error.message }, { status: 400 });
-      }
-
-      return redirect('/admin/events');
-    } catch (error) {
-      return json({ 
-        error: 'Database error. Please check your setup and try again.',
-        tablesNotCreated: true 
-      }, { status: 500 });
+    if (error) {
+      return json({ error: error.message }, { status: 400 });
     }
+
+    return json({ success: true, message: 'Event created successfully' });
   }
 
   if (intent === 'delete') {
