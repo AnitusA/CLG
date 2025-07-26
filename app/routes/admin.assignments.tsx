@@ -36,16 +36,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const dueDate = formData.get('dueDate') as string;
     const subject = formData.get('subject') as string;
 
-    // Validate required fields
-    if (!title || !description || !dueDate || !subject) {
-      return json({ error: 'All fields are required' }, { status: 400 });
+    // Validate required fields (description is optional)
+    if (!title || !dueDate || !subject) {
+      return json({ error: 'Assignment topic, subject, and due date are required' }, { status: 400 });
     }
 
     const { error } = await supabase
       .from('assignments')
       .insert({
         title,
-        description,
+        description: description || '', // Optional field
         due_date: dueDate,
         subject,
         status: 'active',
@@ -97,16 +97,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const dueDate = formData.get('dueDate') as string;
     const subject = formData.get('subject') as string;
 
-    // Validate required fields
-    if (!title || !description || !dueDate || !subject) {
-      return json({ error: 'All fields are required' }, { status: 400 });
+    // Validate required fields (description is optional)
+    if (!title || !dueDate || !subject) {
+      return json({ error: 'Assignment topic, subject, and due date are required' }, { status: 400 });
     }
 
     const { error } = await supabase
       .from('assignments')
       .update({
         title,
-        description,
+        description: description || '', // Optional field
         due_date: dueDate,
         subject,
         updated_at: new Date().toISOString()
@@ -262,15 +262,14 @@ export default function AssignmentManagement() {
 
               <div>
                 <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Description
+                  Description <span className="text-gray-400 text-xs">(Optional)</span>
                 </label>
                 <textarea
                   id="description"
                   name="description"
                   rows={4}
-                  required
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  placeholder="Enter assignment description and requirements..."
+                  placeholder="Enter assignment description and requirements (optional)..."
                 />
               </div>
 
