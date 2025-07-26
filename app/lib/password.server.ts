@@ -172,3 +172,11 @@ export function checkRateLimit(identifier: string, maxAttempts: number = 5, wind
 export function resetRateLimit(identifier: string): void {
   loginAttempts.delete(identifier);
 }
+
+/**
+ * Clear all rate limiting data (useful for development/testing)
+ */
+export function clearAllRateLimits(): void {
+  loginAttempts.clear();
+  console.log('All rate limiting data cleared');
+}

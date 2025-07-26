@@ -33,11 +33,16 @@ export async function action({ request }: ActionFunctionArgs) {
                     request.headers.get('x-real-ip') || 
                     'unknown';
 
+    console.log('🔐 Login attempt:', { registerNumber, password, clientIP });
     const student = await authenticateStudent(registerNumber, password, clientIP);
+    console.log('🔐 Authentication result:', { student: !!student, studentData: student });
+    
     if (!student) {
+      console.log('❌ Authentication failed for:', registerNumber);
       return json({ error: 'Invalid register number or password' }, { status: 400 });
     }
 
+    console.log('✅ Authentication successful, creating session for:', registerNumber);
     return createUserSession({
       request,
       userId: student.id,
