@@ -79,65 +79,41 @@ export async function authenticateStudent(registerNumber: string, password: stri
     return null;
   }
 
+  // Temporarily disable rate limiting for testing - can be re-enabled later
   // Rate limiting by IP address (if provided)
-  if (clientIP && !checkRateLimit(clientIP)) {
-    throw new Error('Too many login attempts. Please try again later.');
-  }
+  // if (clientIP && !checkRateLimit(clientIP)) {
+  //   throw new Error('Too many login attempts. Please try again later.');
+  // }
 
   // Rate limiting by register number
-  if (!checkRateLimit(`student:${registerNumber}`)) {
-    throw new Error('Too many login attempts for this account. Please try again later.');
-  }
+  // if (!checkRateLimit(`student:${registerNumber}`)) {
+  //   throw new Error('Too many login attempts for this account. Please try again later.');
+  // }
 
   try {
-    // First try to get student with both password and password_hash columns
+    // Simplified query - only get what we know exists
     let { data: student, error } = await supabase
       .from('students')
-      .select('id, register_number, password_hash, password')
+      .select('id, register_number, password')
       .eq('register_number', registerNumber)
       .single();
 
     if (error || !student) {
+      console.log('Student not found or error:', error);
       return null;
     }
 
-    let isValid = false;
-
-    // Check if student has a bcrypt hash
-    if (student.password_hash && student.password_hash.startsWith('$2')) {
-      // Use bcrypt verification for hashed passwords
-      isValid = await verifyPassword(password, student.password_hash);
-    } 
-    // Fallback to plain text comparison during migration period
-    else if (student.password) {
-      // Direct comparison for old plain text passwords
-      isValid = password === student.password;
-      
-      // If login is successful with plain text, hash the password for future use
-      if (isValid) {
-        try {
-          const hashedPassword = await hashPassword(password);
-          await supabase
-            .from('students')
-            .update({ password_hash: hashedPassword })
-            .eq('id', student.id);
-          console.log(`Migrated password for student ${registerNumber} to bcrypt hash`);
-        } catch (hashError) {
-          console.error('Failed to migrate password to hash:', hashError);
-          // Don't fail the login if hashing fails
-        }
-      }
-    }
+    // Simple password comparison for now
+    const isValid = password === student.password;
+    console.log('Password comparison:', { 
+      input: password, 
+      stored: student.password, 
+      match: isValid 
+    });
     
     if (!isValid) {
       return null;
     }
-
-    // Reset rate limits on successful login
-    if (clientIP) {
-      resetRateLimit(clientIP);
-    }
-    resetRateLimit(`student:${registerNumber}`);
 
     // Return student data without password fields
     return {
