@@ -164,11 +164,12 @@ export default function AssignmentManagement() {
               <Link 
                 to="/admin" 
                 className="flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors group"
+                title="Back to Dashboard"
               >
-                <svg className="w-6 h-6 mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <svg className="w-6 h-6 mr-0 sm:mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                <span className="font-medium">Back to Dashboard</span>
+                <span className="font-medium hidden sm:inline">Back to Dashboard</span>
               </Link>
               <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent flex items-center">
