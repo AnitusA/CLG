@@ -27,19 +27,30 @@ export async function action({ request }: ActionFunctionArgs) {
     return json({ error: 'Password is required' }, { status: 400 });
   }
 
-  const student = await authenticateStudent(registerNumber, password);
-  if (!student) {
-    return json({ error: 'Invalid register number or password' }, { status: 400 });
-  }
+  try {
+    // Get client IP for rate limiting
+    const clientIP = request.headers.get('x-forwarded-for') || 
+                    request.headers.get('x-real-ip') || 
+                    'unknown';
 
-  return createUserSession({
-    request,
-    userId: student.id,
-    userType: 'student',
-    registerNumber: student.registerNumber,
-    remember: false,
-    redirectTo: '/student',
-  });
+    const student = await authenticateStudent(registerNumber, password, clientIP);
+    if (!student) {
+      return json({ error: 'Invalid register number or password' }, { status: 400 });
+    }
+
+    return createUserSession({
+      request,
+      userId: student.id,
+      userType: 'student',
+      registerNumber: student.registerNumber,
+      remember: false,
+      redirectTo: '/student',
+    });
+  } catch (error) {
+    return json({ 
+      error: error instanceof Error ? error.message : 'Authentication failed' 
+    }, { status: 400 });
+  }
 }
 
 export default function StudentLogin() {
