@@ -1,7 +1,7 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { Form, Link, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 import { requireAdmin } from '~/lib/session.server';
 import { supabase } from '~/lib/supabase.server';
@@ -33,8 +33,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const description = formData.get('description') as string;
     const homeworkDate = formData.get('assignedDate') as string;
 
+    console.log('Creating homework with:', { subject, description, homeworkDate });
+
     // Validate required fields
     if (!subject || !description || !homeworkDate) {
+      console.log('Validation failed:', { subject: !!subject, description: !!description, homeworkDate: !!homeworkDate });
       return json({ error: 'All fields are required' }, { status: 400 });
     }
 
@@ -53,7 +56,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return redirect('/admin/homework');
+    console.log('Homework created successfully');
+    return json({ success: true, message: 'Homework assigned successfully!' });
   }
 
   if (intent === 'update') {
@@ -81,7 +85,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return redirect('/admin/homework');
+    return json({ success: true, message: 'Homework updated successfully!' });
   }
 
   if (intent === 'delete') {
@@ -97,7 +101,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return redirect('/admin/homework');
+    return json({ success: true, message: 'Homework deleted successfully!' });
   }
 
   // No status column in homework table anymore, so remove status update logic
@@ -110,10 +114,29 @@ export default function HomeworkManagement() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const [showForm, setShowForm] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(''); // Empty string means show all
   const [editingHomework, setEditingHomework] = useState<any>(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const isSubmitting = navigation.state === 'submitting';
+
+  // Handle successful submissions
+  useEffect(() => {
+    if (navigation.state === 'idle' && actionData && 'success' in actionData) {
+      setShowForm(false);
+      setEditingHomework(null);
+      setShowSuccessMessage(true);
+      // Hide success message after 3 seconds
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    }
+  }, [navigation.state, actionData]);
+
+  // Clear success message when opening forms
+  useEffect(() => {
+    if (showForm || editingHomework) {
+      setShowSuccessMessage(false);
+    }
+  }, [showForm, editingHomework]);
 
   // Helper function to format date intelligently
   const formatDateDisplay = (dateString: string) => {
@@ -148,7 +171,16 @@ export default function HomeworkManagement() {
   };
 
   const getHomeworkByDate = (date: string) => {
+    // If no date is selected (empty string), return all homework
+    if (!date) {
+      return homework;
+    }
+    // Otherwise, filter by the selected date
     return homework.filter(hw => hw.homework_date === date);
+  };
+
+  const getFilteredHomework = () => {
+    return getHomeworkByDate(selectedDate);
   };
 
   return (
@@ -188,6 +220,18 @@ export default function HomeworkManagement() {
       </header>
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Success Message */}
+        {showSuccessMessage && actionData && 'success' in actionData && (
+          <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+            <div className="flex items-center">
+              <svg className="w-6 h-6 text-green-600 dark:text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-green-600 dark:text-green-400 font-medium text-base">{actionData.message}</p>
+            </div>
+          </div>
+        )}
+
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-4">
@@ -228,7 +272,7 @@ export default function HomeworkManagement() {
               <div className="ml-3">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pending</p>
                 <p className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {homework.filter(hw => hw.status === 'pending').length}
+                  {homework.filter(hw => hw.status === 'pending' || !hw.status).length}
                 </p>
               </div>
             </div>
@@ -255,7 +299,7 @@ export default function HomeworkManagement() {
         {(showForm || editingHomework) && (
           <div className="mb-8 bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">{editingHomework ? 'Edit Homework' : 'Assign New Homework'}</h2>
-            <Form method="post" className="space-y-6">
+            <Form method="post" className="space-y-6" key={editingHomework ? editingHomework.id : 'new-homework'}>
               <input type="hidden" name="intent" value={editingHomework ? 'update' : 'create'} />
               {editingHomework && (
                 <input type="hidden" name="homeworkId" value={editingHomework.id} />
@@ -334,15 +378,26 @@ export default function HomeworkManagement() {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Homework Calendar</h2>
             <div className="flex items-center space-x-4">
               <label htmlFor="dateFilter" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Filter by date:
+                Filter by date (optional):
               </label>
-              <input
-                type="date"
-                id="dateFilter"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-              />
+              <div className="flex items-center space-x-2">
+                <input
+                  type="date"
+                  id="dateFilter"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                />
+                {selectedDate && (
+                  <button
+                    onClick={() => setSelectedDate('')}
+                    className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    title="Clear filter - Show all homework"
+                  >
+                    Show All
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
@@ -366,7 +421,12 @@ export default function HomeworkManagement() {
             <div className="space-y-4">
               {getHomeworkByDate(selectedDate).length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-600 dark:text-gray-400">No homework assigned for {new Date(selectedDate).toLocaleDateString()}</p>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {selectedDate 
+                      ? `No homework assigned for ${new Date(selectedDate).toLocaleDateString()}`
+                      : 'No homework has been assigned yet'
+                    }
+                  </p>
                 </div>
               ) : (
                 getHomeworkByDate(selectedDate).map((hw) => (
