@@ -31,17 +31,24 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const intent = formData.get('intent');
 
   if (intent === 'create') {
-    const examName = formData.get('examName') as string;
+    const examType = formData.get('examType') as string;
+    const subject = formData.get('subject') as string;
+    const examDate = formData.get('examDate') as string;
+    const examTime = formData.get('examTime') as string;
 
     // Validate required fields
-    if (!examName) {
-      return json({ error: 'Exam title is required' }, { status: 400 });
+    if (!examType || !subject || !examDate || !examTime) {
+      return json({ error: 'Exam type, subject, date and time are required' }, { status: 400 });
     }
 
     const { error } = await supabase
       .from('exams')
       .insert({
-        exam_name: examName,
+        exam_name: examType, // Use exam type as exam name
+        subject: subject,
+        exam_date: examDate,
+        exam_time: examTime,
+        exam_type: examType,
         status: 'scheduled',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
@@ -71,17 +78,24 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   if (intent === 'update') {
     const examId = formData.get('examId') as string;
-    const examName = formData.get('examName') as string;
+    const examType = formData.get('examType') as string;
+    const subject = formData.get('subject') as string;
+    const examDate = formData.get('examDate') as string;
+    const examTime = formData.get('examTime') as string;
 
     // Validate required fields
-    if (!examName) {
-      return json({ error: 'Exam title is required' }, { status: 400 });
+    if (!examType || !subject || !examDate || !examTime) {
+      return json({ error: 'Exam type, subject, date and time are required' }, { status: 400 });
     }
 
     const { error } = await supabase
       .from('exams')
       .update({
-        exam_name: examName,
+        exam_name: examType, // Use exam type as exam name
+        subject: subject,
+        exam_date: examDate,
+        exam_time: examTime,
+        exam_type: examType,
         updated_at: new Date().toISOString()
       })
       .eq('id', examId);
@@ -198,18 +212,58 @@ export default function ExamScheduleManagement() {
             <Form method="post" className="space-y-6" key="create-form">
               <input type="hidden" name="intent" value="create" />
               
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="examName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Exam Title *
+                  <label htmlFor="examType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Exam Type *
                   </label>
                   <input
                     type="text"
-                    id="examName"
-                    name="examName"
+                    id="examType"
+                    name="examType"
                     required
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Enter exam title..."
+                    placeholder="Enter exam type (e.g., Mid Term, Final Exam, Quiz, Unit Test)..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Subject *
+                  </label>
+                  <input
+                    type="text"
+                    id="subject"
+                    name="subject"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                    placeholder="Enter subject name (e.g., Mathematics, Physics, Chemistry)..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="examDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Exam Date *
+                  </label>
+                  <input
+                    type="date"
+                    id="examDate"
+                    name="examDate"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="examTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Exam Time *
+                  </label>
+                  <input
+                    type="time"
+                    id="examTime"
+                    name="examTime"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -254,19 +308,62 @@ export default function ExamScheduleManagement() {
               <input type="hidden" name="intent" value="update" />
               <input type="hidden" name="examId" value={editingExam.id} />
               
-              <div className="grid grid-cols-1 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="edit-examName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Exam Title *
+                  <label htmlFor="edit-examType" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Exam Type *
                   </label>
                   <input
                     type="text"
-                    id="edit-examName"
-                    name="examName"
-                    defaultValue={editingExam.exam_name}
+                    id="edit-examType"
+                    name="examType"
+                    defaultValue={editingExam.exam_type || editingExam.exam_name || ''}
                     required
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Enter exam title..."
+                    placeholder="Enter exam type (e.g., Mid Term, Final Exam, Quiz, Unit Test)..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="edit-subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Subject *
+                  </label>
+                  <input
+                    type="text"
+                    id="edit-subject"
+                    name="subject"
+                    defaultValue={editingExam.subject || ''}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                    placeholder="Enter subject name (e.g., Mathematics, Physics, Chemistry)..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="edit-examDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Exam Date *
+                  </label>
+                  <input
+                    type="date"
+                    id="edit-examDate"
+                    name="examDate"
+                    defaultValue={editingExam.exam_date || ''}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="edit-examTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Exam Time *
+                  </label>
+                  <input
+                    type="time"
+                    id="edit-examTime"
+                    name="examTime"
+                    defaultValue={editingExam.exam_time || ''}
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
                   />
                 </div>
               </div>
@@ -298,12 +395,27 @@ export default function ExamScheduleManagement() {
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                      {exam.exam_name}
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                      {exam.exam_name || exam.exam_type}
                     </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
+                    
+                    {exam.subject && (
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                        <span className="font-medium">Subject:</span> {exam.subject}
+                      </p>
+                    )}
+                    
+                    {exam.exam_date && (
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                        <span className="font-medium">Date:</span> {new Date(exam.exam_date).toLocaleDateString()}
+                        {exam.exam_time && <span> at {exam.exam_time}</span>}
+                      </p>
+                    )}
+                    
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
                       <span className="font-medium">Status:</span> {exam.status}
                     </p>
+                    
                     <p className="text-sm text-gray-600 dark:text-gray-300">
                       <span className="font-medium">Created:</span> {formatDate(exam.created_at)}
                     </p>

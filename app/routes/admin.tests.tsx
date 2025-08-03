@@ -2,6 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remi
 import { json, redirect } from '@remix-run/node';
 import { Form, Link, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { useState } from 'react';
+import React from 'react';
 
 import { requireAdmin } from '~/lib/session.server';
 import { supabase } from '~/lib/supabase.server';
@@ -51,10 +52,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const subject = formData.get('subject') as string;
     const examDate = formData.get('examDate') as string;
     const examTime = formData.get('examTime') as string;
+    const syllabus = formData.get('syllabus') as string;
 
     // Validate required fields
-    if (!subject || !examDate || !examTime) {
-      return json({ error: 'All fields are required' }, { status: 400 });
+    if (!subject || !examDate || !examTime || !syllabus) {
+      return json({ error: 'All fields including syllabus are required' }, { status: 400 });
     }
 
     try {
@@ -64,6 +66,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
           subject,
           exam_date: examDate,
           exam_time: examTime,
+          syllabus,
           status: 'scheduled',
           created_at: new Date().toISOString()
         });
@@ -78,7 +81,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         return json({ error: error.message }, { status: 400 });
       }
 
-      return redirect('/admin/tests');
+      return json({ success: 'Exam scheduled successfully!' });
     } catch (error) {
       return json({ 
         error: 'Database error. Please check your setup and try again.',
@@ -99,7 +102,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return redirect('/admin/tests');
+    return json({ success: 'Exam deleted successfully!' });
   }
 
   if (intent === 'updateStatus') {
@@ -115,7 +118,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return redirect('/admin/tests');
+    return json({ success: 'Exam status updated successfully!' });
   }
 
   return json({ error: 'Invalid action' }, { status: 400 });
@@ -126,8 +129,25 @@ export default function ExamSchedules() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const isSubmitting = navigation.state === 'submitting';
+
+  // Handle success responses
+  React.useEffect(() => {
+    if (navigation.state === 'idle' && actionData && 'success' in actionData) {
+      setShowCreateForm(false);
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    }
+  }, [navigation.state, actionData]);
+
+  // Clear success message when opening forms
+  React.useEffect(() => {
+    if (showCreateForm) {
+      setShowSuccessMessage(false);
+    }
+  }, [showCreateForm]);
 
   const getUpcomingExams = () => {
     const today = new Date();
@@ -233,6 +253,7 @@ CREATE TABLE IF NOT EXISTS exam_schedules (
     subject TEXT NOT NULL,
     exam_date DATE NOT NULL,
     exam_time TIME NOT NULL,
+    syllabus TEXT NOT NULL,
     status VARCHAR(20) DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'ongoing', 'completed', 'cancelled')),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -323,6 +344,30 @@ GRANT ALL ON exam_schedules TO service_role;`}
       </header>
 
       <main className="max-w-7xl mx-auto py-6 sm:py-8 px-4 sm:px-6 lg:px-8">
+        {/* Success Message */}
+        {showSuccessMessage && actionData && 'success' in actionData && (
+          <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <p className="text-green-700 dark:text-green-300 font-medium">{actionData.success}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {actionData && 'error' in actionData && (
+          <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-red-700 dark:text-red-300 font-medium">{actionData.error}</p>
+            </div>
+          </div>
+        )}
+
         {/* Quick Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6 sm:mb-8">
           <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-4">
@@ -406,6 +451,20 @@ GRANT ALL ON exam_schedules TO service_role;`}
                 />
               </div>
 
+              <div>
+                <label htmlFor="syllabus" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Syllabus/Topics
+                </label>
+                <textarea
+                  id="syllabus"
+                  name="syllabus"
+                  rows={4}
+                  required
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white text-sm sm:text-base"
+                  placeholder="Enter exam syllabus and topics to be covered (e.g., Chapter 1-5: Algebra, Trigonometry, Calculus basics...)"
+                />
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <label htmlFor="examDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -451,26 +510,6 @@ GRANT ALL ON exam_schedules TO service_role;`}
                 </button>
               </div>
             </Form>
-
-            {actionData?.error && (
-              <div className="mt-4 p-3 sm:p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                <div className="flex items-start">
-                  <svg className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div>
-                    <p className="text-red-600 dark:text-red-400 font-medium text-sm">
-                      {actionData.error}
-                    </p>
-                    {(actionData as any)?.tablesNotCreated && (
-                      <p className="text-red-500 dark:text-red-400 text-xs sm:text-sm mt-1">
-                        Please follow the setup instructions above to create the database tables.
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         )}
 
@@ -510,6 +549,12 @@ GRANT ALL ON exam_schedules TO service_role;`}
                         <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white mb-2">
                           {exam.subject}
                         </h3>
+                        <div className="mb-3">
+                          <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                            <span className="font-medium text-gray-800 dark:text-gray-200">Syllabus: </span>
+                            {exam.syllabus}
+                          </p>
+                        </div>
                         <div className="space-y-1 sm:space-y-2">
                           <p className="text-xs sm:text-sm text-red-600 dark:text-red-400 flex items-center">
                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
