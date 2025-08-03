@@ -287,7 +287,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Features</p>
-                      <p className="text-2xl font-semibold text-gray-900 dark:text-white">9 Modules</p>
+                      <p className="text-2xl font-semibold text-gray-900 dark:text-white">{adminFeatures.length} Modules</p>
                     </div>
                   </div>
                 </div>

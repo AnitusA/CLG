@@ -35,13 +35,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
     const seminarDate = formData.get('seminarDate') as string;
-    const startTime = formData.get('startTime') as string;
-    const endTime = formData.get('endTime') as string;
-    const speaker = formData.get('speaker') as string;
-    const location = formData.get('location') as string;
 
     // Validate required fields
-    if (!subject || !title || !description || !seminarDate || !startTime || !endTime || !speaker || !location) {
+    if (!subject || !title || !description || !seminarDate) {
       return json({ error: 'All fields are required' }, { status: 400 });
     }
 
@@ -51,12 +47,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         category: 'academic', // Use valid category for database
         title: `${subject}: ${title}`, // Include subject in title
         description,
-        speaker,
+        speaker: '', // Empty as not needed
         speaker_bio: '', // Optional field, can be empty
         seminar_date: seminarDate,
-        start_time: startTime,
-        end_time: endTime,
-        location,
+        start_time: '09:00', // Default time
+        end_time: '10:00', // Default time
+        location: '', // Empty as not needed
         capacity: 50, // Default capacity
         registration_required: false, // Default
         registration_deadline: seminarDate, // Same as seminar date
@@ -95,13 +91,9 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
     const seminarDate = formData.get('seminarDate') as string;
-    const startTime = formData.get('startTime') as string;
-    const endTime = formData.get('endTime') as string;
-    const speaker = formData.get('speaker') as string;
-    const location = formData.get('location') as string;
 
     // Validate required fields
-    if (!subject || !title || !description || !seminarDate || !startTime || !endTime || !speaker || !location) {
+    if (!subject || !title || !description || !seminarDate) {
       return json({ error: 'All fields are required' }, { status: 400 });
     }
 
@@ -110,11 +102,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       .update({
         title: `${subject}: ${title}`, // Include subject in title
         description,
-        speaker,
+        speaker: '', // Empty as not needed
         seminar_date: seminarDate,
-        start_time: startTime,
-        end_time: endTime,
-        location,
+        start_time: '09:00', // Default time
+        end_time: '10:00', // Default time
+        location: '', // Empty as not needed
         updated_at: new Date().toISOString()
       })
       .eq('id', seminarId);
@@ -399,60 +391,6 @@ export default function SeminarManagement() {
                   />
                 </div>
 
-                <div>
-                  <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Start Time
-                  </label>
-                  <input
-                    type="time"
-                    id="startTime"
-                    name="startTime"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    End Time
-                  </label>
-                  <input
-                    type="time"
-                    id="endTime"
-                    name="endTime"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="speaker" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Speaker Name
-                  </label>
-                  <input
-                    type="text"
-                    id="speaker"
-                    name="speaker"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Enter speaker's name..."
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Location
-                  </label>
-                  <input
-                    type="text"
-                    id="location"
-                    name="location"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Enter seminar location..."
-                  />
-                </div>
-
                 <div className="md:col-span-2">
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Description
@@ -553,31 +491,12 @@ export default function SeminarManagement() {
                       
                       <p className="text-gray-600 dark:text-gray-400 mb-3">{seminar.description}</p>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-gray-600 dark:text-gray-400">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center">
                           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
                           Date: {new Date(seminar.seminar_date).toLocaleDateString()}
-                        </div>
-                        <div className="flex items-center">
-                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          Time: {seminar.start_time} - {seminar.end_time}
-                        </div>
-                        <div className="flex items-center">
-                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          Location: {seminar.location}
-                        </div>
-                        <div className="flex items-center md:col-span-3">
-                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                          </svg>
-                          Speaker: {seminar.speaker}
                         </div>
                       </div>
                     </div>
