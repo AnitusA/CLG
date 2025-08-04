@@ -45,30 +45,29 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       });
     }
 
-    // Fetch Tests/Exams
-    const { data: tests } = await supabase
-      .from('exam_schedules')
+    // Fetch Exams (using the actual exams table)
+    const { data: exams } = await supabase
+      .from('exams')
       .select('*')
-      .order('exam_date', { ascending: true });
+      .order('created_at', { ascending: true });
 
-    if (tests) {
-      tests.forEach(test => {
+    if (exams) {
+      exams.forEach(exam => {
         calendarEvents.push({
-          id: `test-${test.id}`,
-          title: `${test.subject} Exam`,
-          date: test.exam_date,
+          id: `exam-${exam.id}`,
+          title: exam.exam_name,
+          date: exam.created_at.split('T')[0], // Use created date as placeholder
           type: 'test',
-          description: `Time: ${test.exam_time}`,
+          description: exam.status,
           color: 'bg-red-500'
         });
       });
     }
 
-    // Fetch Assignments (excluding daily homework)
+    // Fetch Assignments
     const { data: assignments } = await supabase
       .from('assignments')
       .select('*')
-      .neq('type', 'daily_homework')
       .order('due_date', { ascending: true });
 
     if (assignments) {
@@ -80,8 +79,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
           type: 'assignment',
           description: assignment.description,
           status: assignment.status,
-          priority: assignment.priority,
-          color: 'bg-orange-500'
+          color: 'bg-blue-500'
         });
       });
     }
@@ -91,6 +89,41 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       .from('seminars')
       .select('*')
       .order('seminar_date', { ascending: true });
+
+    if (seminars) {
+      seminars.forEach(seminar => {
+        calendarEvents.push({
+          id: `seminar-${seminar.id}`,
+          title: seminar.title,
+          date: seminar.seminar_date,
+          type: 'seminar',
+          description: seminar.description,
+          color: 'bg-purple-500'
+        });
+      });
+    }
+
+    // Fetch Records
+    const { data: records } = await supabase
+      .from('records')
+      .select('*')
+      .order('record_date', { ascending: true });
+
+    if (records) {
+      records.forEach(record => {
+        calendarEvents.push({
+          id: `record-${record.id}`,
+          title: `${record.subject} Record`,
+          date: record.record_date,
+          type: 'deadline',
+          description: record.description,
+          color: 'bg-green-500'
+        });
+      });
+    }
+
+    // Sort all events by date
+    calendarEvents.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     if (seminars) {
       seminars.forEach(seminar => {

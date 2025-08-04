@@ -2,6 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remi
 import { json, redirect } from '@remix-run/node';
 import { Form, Link, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { useState } from 'react';
+import React from 'react';
 
 import { requireAdmin } from '~/lib/session.server';
 import { supabase } from '~/lib/supabase.server';
@@ -43,10 +44,20 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const { error } = await supabase
       .from('seminars')
       .insert({
-        subject,
-        title,
+        category: 'academic', // Use valid category for database
+        title: `${subject}: ${title}`, // Include subject in title
         description,
+        speaker: '', // Empty as not needed
+        speaker_bio: '', // Optional field, can be empty
         seminar_date: seminarDate,
+        start_time: '09:00', // Default time
+        end_time: '10:00', // Default time
+        location: '', // Empty as not needed
+        capacity: 50, // Default capacity
+        registration_required: false, // Default
+        registration_deadline: seminarDate, // Same as seminar date
+        requirements: '', // Optional
+        materials: '', // Optional
         status: 'scheduled',
         created_at: new Date().toISOString()
       });
@@ -55,7 +66,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return redirect('/admin/seminars');
+    return json({ success: 'Seminar created successfully!' });
   }
 
   if (intent === 'updateStatus') {
@@ -71,7 +82,40 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return redirect('/admin/seminars');
+    return json({ success: 'Seminar status updated successfully!' });
+  }
+
+  if (intent === 'update') {
+    const seminarId = formData.get('seminarId') as string;
+    const subject = formData.get('subject') as string;
+    const title = formData.get('title') as string;
+    const description = formData.get('description') as string;
+    const seminarDate = formData.get('seminarDate') as string;
+
+    // Validate required fields
+    if (!subject || !title || !description || !seminarDate) {
+      return json({ error: 'All fields are required' }, { status: 400 });
+    }
+
+    const { error } = await supabase
+      .from('seminars')
+      .update({
+        title: `${subject}: ${title}`, // Include subject in title
+        description,
+        speaker: '', // Empty as not needed
+        seminar_date: seminarDate,
+        start_time: '09:00', // Default time
+        end_time: '10:00', // Default time
+        location: '', // Empty as not needed
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', seminarId);
+
+    if (error) {
+      return json({ error: error.message }, { status: 400 });
+    }
+
+    return json({ success: 'Seminar updated successfully!' });
   }
 
   if (intent === 'delete') {
@@ -86,7 +130,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return redirect('/admin/seminars');
+    return json({ success: 'Seminar deleted successfully!' });
   }
 
   return json({ error: 'Invalid action' }, { status: 400 });
@@ -97,8 +141,26 @@ export default function SeminarManagement() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const [showForm, setShowForm] = useState(false);
+  const [editingSeminar, setEditingSeminar] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+  // Handle success responses
+  React.useEffect(() => {
+    if (navigation.state === 'idle' && actionData && 'success' in actionData) {
+      setShowForm(false);
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    }
+  }, [navigation.state, actionData]);
+
+  // Clear success message when opening forms
+  React.useEffect(() => {
+    if (showForm) {
+      setShowSuccessMessage(false);
+    }
+  }, [showForm]);
 
   const isSubmitting = navigation.state === 'submitting';
 
@@ -192,6 +254,30 @@ export default function SeminarManagement() {
       </header>
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Success Message */}
+        {showSuccessMessage && actionData && 'success' in actionData && (
+          <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <p className="text-green-700 dark:text-green-300 font-medium">{actionData.success}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {actionData && 'error' in actionData && (
+          <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-red-700 dark:text-red-300 font-medium">{actionData.error}</p>
+            </div>
+          </div>
+        )}
+
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-4">
@@ -293,7 +379,7 @@ export default function SeminarManagement() {
 
                 <div className="md:col-span-2">
                   <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Title
+                    Seminar Title
                   </label>
                   <input
                     type="text"
@@ -337,12 +423,6 @@ export default function SeminarManagement() {
                 </button>
               </div>
             </Form>
-
-            {actionData?.error && (
-              <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                <p className="text-red-600 dark:text-red-400">{actionData.error}</p>
-              </div>
-            )}
           </div>
         )}
 
@@ -398,7 +478,7 @@ export default function SeminarManagement() {
             <div className="space-y-4">
               {getFilteredSeminars().map((seminar) => (
                 <div key={seminar.id} className="bg-white/50 dark:bg-slate-700/50 rounded-xl p-6 border border-white/20 hover:shadow-lg transition-shadow">
-                  <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-3 mb-2">
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -412,12 +492,6 @@ export default function SeminarManagement() {
                       <p className="text-gray-600 dark:text-gray-400 mb-3">{seminar.description}</p>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-400">
-                        <div className="flex items-center">
-                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                          </svg>
-                          Subject: {seminar.subject}
-                        </div>
                         <div className="flex items-center">
                           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />

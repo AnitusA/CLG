@@ -52,7 +52,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return redirect('/admin/record');
+    return json({ success: 'Record created successfully!' });
   }
 
   if (intent === 'delete') {
@@ -64,7 +64,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (error) {
       return json({ error: error.message }, { status: 400 });
     }
-    return redirect('/admin/record');
+    return json({ success: 'Record deleted successfully!' });
   }
 
   if (intent === 'toggle') {
@@ -78,7 +78,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (error) {
       return json({ error: error.message }, { status: 400 });
     }
-    return redirect('/admin/record');
+    return json({ success: 'Record status updated successfully!' });
   }
 
   if (intent === 'edit') {
@@ -104,7 +104,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return redirect('/admin/record');
+    return json({ success: 'Record updated successfully!' });
   }
 
   return json({ error: 'Invalid action' }, { status: 400 });
@@ -117,6 +117,25 @@ export default function DeadlineManagement() {
   const [showForm, setShowForm] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<{ subject: string; description: string; record_date: string } | null>(null);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+  // Handle success responses
+  React.useEffect(() => {
+    if (navigation.state === 'idle' && actionData?.success) {
+      setShowForm(false);
+      setEditId(null);
+      setEditValues(null);
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+    }
+  }, [navigation.state, actionData]);
+
+  // Clear success message when opening forms
+  React.useEffect(() => {
+    if (showForm || editId) {
+      setShowSuccessMessage(false);
+    }
+  }, [showForm, editId]);
 
   // Reset editId after successful edit
   React.useEffect(() => {
@@ -179,6 +198,30 @@ export default function DeadlineManagement() {
       </header>
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Success Message */}
+        {showSuccessMessage && actionData?.success && (
+          <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+              <p className="text-green-700 dark:text-green-300 font-medium">{actionData.success}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {actionData?.error && (
+          <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p className="text-red-700 dark:text-red-300 font-medium">{actionData.error}</p>
+            </div>
+          </div>
+        )}
+
         {/* Create Deadline Form */}
         {showForm && (
           <div className="mb-8 bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">

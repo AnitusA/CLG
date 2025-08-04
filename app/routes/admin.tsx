@@ -35,25 +35,16 @@ export default function AdminDashboard() {
   const adminFeatures = [
     {
       name: 'Assignments',
-      description: 'Create and manage student assignments',
-      icon: '📝',
+      description: 'Assignment topic, subject, due date, description',
+      icon: '�',
       href: '/admin/assignments',
       color: 'from-blue-600 to-blue-800',
       bgColor: 'bg-blue-50',
       iconBg: 'bg-blue-500'
     },
     {
-      name: 'Records',
-      description: 'Set and track important deadlines',
-      icon: '📅',
-      href: '/admin/record',
-      color: 'from-purple-600 to-purple-800',
-      bgColor: 'bg-purple-50',
-      iconBg: 'bg-purple-500'
-    },
-    {
       name: 'Daily Homework',
-      description: 'Assign and track daily homework',
+      description: 'Subject and description for daily homework',
       icon: '📚',
       href: '/admin/homework',
       color: 'from-green-600 to-green-800',
@@ -61,44 +52,17 @@ export default function AdminDashboard() {
       iconBg: 'bg-green-500'
     },
     {
-      name: 'Daily Updates',
-      description: 'Post daily announcements and updates',
-      icon: '📢',
-      href: '/admin/updates',
-      color: 'from-orange-600 to-orange-800',
-      bgColor: 'bg-orange-50',
-      iconBg: 'bg-orange-500'
-    },
-    {
-      name: 'Notes',
-      description: 'Manage study notes and resources',
-      icon: '📋',
-      href: '/admin/notes',
-      color: 'from-indigo-600 to-indigo-800',
-      bgColor: 'bg-indigo-50',
-      iconBg: 'bg-indigo-500'
-    },
-    {
-      name: 'Exam Schedules',
-      description: 'Schedule and manage exam announcements',
-      icon: '📊',
-      href: '/admin/tests',
-      color: 'from-red-600 to-red-800',
-      bgColor: 'bg-red-50',
-      iconBg: 'bg-red-500'
-    },
-    {
-      name: 'Birthday Dates',
-      description: 'Track and celebrate student birthdays',
-      icon: '🎉',
-      href: '/admin/birthdays',
-      color: 'from-pink-600 to-pink-800',
-      bgColor: 'bg-pink-50',
-      iconBg: 'bg-pink-500'
+      name: 'Record',
+      description: 'Subject, date and description for records',
+      icon: '�',
+      href: '/admin/record',
+      color: 'from-purple-600 to-purple-800',
+      bgColor: 'bg-purple-50',
+      iconBg: 'bg-purple-500'
     },
     {
       name: 'Seminars',
-      description: 'Organize and schedule seminars',
+      description: 'Title, subject, date and description',
       icon: '🎓',
       href: '/admin/seminars',
       color: 'from-violet-600 to-violet-800',
@@ -106,22 +70,31 @@ export default function AdminDashboard() {
       iconBg: 'bg-violet-500'
     },
     {
-      name: 'Events',
-      description: 'Manage college events and activities',
-      icon: '🎪',
-      href: '/admin/events',
-      color: 'from-cyan-600 to-cyan-800',
-      bgColor: 'bg-cyan-50',
-      iconBg: 'bg-cyan-500'
+      name: 'Exam Schedule',
+      description: 'Exam title, subject and date',
+      icon: '📊',
+      href: '/admin/exams',
+      color: 'from-red-600 to-red-800',
+      bgColor: 'bg-red-50',
+      iconBg: 'bg-red-500'
     },
     {
       name: 'Calendar',
-      description: 'View all dates and events in calendar format',
+      description: 'View all dates and events (except daily homework)',
       icon: '📅',
       href: '/admin/calendar',
       color: 'from-indigo-600 to-indigo-800',
       bgColor: 'bg-indigo-50',
       iconBg: 'bg-indigo-500'
+    },
+    {
+      name: 'Event',
+      description: 'Event title, description and date',
+      icon: '🎪',
+      href: '/admin/events',
+      color: 'from-cyan-600 to-cyan-800',
+      bgColor: 'bg-cyan-50',
+      iconBg: 'bg-cyan-500'
     }
   ];
 
@@ -314,7 +287,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Features</p>
-                      <p className="text-2xl font-semibold text-gray-900 dark:text-white">9 Modules</p>
+                      <p className="text-2xl font-semibold text-gray-900 dark:text-white">{adminFeatures.length} Modules</p>
                     </div>
                   </div>
                 </div>
