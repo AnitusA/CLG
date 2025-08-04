@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import { requireStudent } from '~/lib/session.server';
 import { supabase } from '~/lib/supabase.server';
-import { destroySession } from '~/lib/session.server'; // Assuming you have a session destruction utility
+import { destroySession, getSession } from '~/lib/session.server';
 
 // Define types for TypeScript
 interface User {
@@ -30,15 +30,36 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await requireStudent(request);
 
   try {
-    const [homeworkRes, assignmentsRes, testsRes, updatesRes, seminarsRes, syllabusRes, birthdaysRes, recordsRes] = await Promise.all([
-      supabase.from('homework').select('*'),
-      supabase.from('assignments').select('*'),
+    const [homeworkRes, assignmentsRes, testsRes, updatesRes, seminarsRes, syllabusRes, birthdaysRes, recordsRes, eventsRes] = await Promise.all([
+      // Homework: Only assignments posted more than 24 hours ago and still active
+      supabase.from('assignments')
+        .select('*')
+        .lt('posted_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
+        .eq('status', 'active'),
+      // Assignments: Only active (not past due date)
+      supabase.from('assignments')
+        .select('*')
+        .gte('due_date', new Date().toISOString().split('T')[0])
+        .eq('status', 'active'),
       supabase.from('tests').select('*'),
       supabase.from('updates').select('*'),
-      supabase.from('seminars').select('*'),
+      // Seminars: Only active (not past date)
+      supabase.from('seminars')
+        .select('*')
+        .gte('seminar_date', new Date().toISOString().split('T')[0])
+        .eq('status', 'active'),
       supabase.from('syllabus').select('*'),
       supabase.from('birthdays').select('*'),
-      supabase.from('records').select('*'),
+      // Records: Only active (not past date)
+      supabase.from('records')
+        .select('*')
+        .gte('record_date', new Date().toISOString().split('T')[0])
+        .eq('status', 'active'),
+      // Events: Only active (not past date)
+      supabase.from('events')
+        .select('*')
+        .gte('event_date', new Date().toISOString().split('T')[0])
+        .eq('status', 'active'),
     ]);
 
     const logErr = (name: string, { error }: { error: any }) => {
@@ -52,6 +73,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     logErr('syllabus', syllabusRes);
     logErr('birthdays', birthdaysRes);
     logErr('records', recordsRes);
+    logErr('events', eventsRes);
 
     return json({
       user,
@@ -63,15 +85,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       syllabusItems: syllabusRes.data || [],
       birthdays: birthdaysRes.data || [],
       records: recordsRes.data || [],
+      events: eventsRes.data || [],
     });
   } catch (error) {
     console.error('Loader error:', error);
-    return json({ user, homework: [], assignments: [], tests: [], updates: [], seminars: [], syllabusItems: [], birthdays: [] }, { status: 500 });
+    return json({ user, homework: [], assignments: [], tests: [], updates: [], seminars: [], syllabusItems: [], birthdays: [], records: [], events: [] }, { status: 500 });
   }
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const session = await requireStudent(request);
+  const session = await getSession(request.headers.get('Cookie'));
   const sessionCookie = await destroySession(session);
   return redirect('/login', {
     headers: {
@@ -81,7 +104,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function StudentDashboard() {
-  const { user, homework, assignments, tests, updates, seminars, syllabusItems, birthdays, records } = useLoaderData<any>();
+  const { user, homework, assignments, tests, updates, seminars, syllabusItems, birthdays, records, events } = useLoaderData<any>();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isNestedRoute = location.pathname !== '/student';
@@ -90,23 +113,23 @@ export default function StudentDashboard() {
   // --- Navigation Items ---
   const navigationItems = [
     { name: 'Dashboard', href: '/student', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h2a2 2 0 012 2v2H8V5z" /></svg> },
-    { name: 'Homework', href: '/student/homework', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> },
+    { name: 'Homework', href: '/student/homework', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>, count: homework.length },
     { name: 'Assignments', href: '/student/assignments', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>, count: assignments.length },
     { name: 'Exams', href: '/student/exams', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0-8V9a2 2 0 012-2h2a2 2 0 012 2v6a2 2 0 01-2 2H9V5z" /></svg> },
     { name: 'Seminars', href: '/student/seminars', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 7v-6m0 0l-9-5m9 5l9-5" /></svg>, count: seminars.length },
     { name: 'Calendar', href: '/student/calendar', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 2v4M16 2v4M3 10h18" /></svg> },
-    { name: 'Events', href: '/student/events', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h8M12 8v8" /></svg> },
+    { name: 'Events', href: '/student/events', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h8M12 8v8" /></svg>, count: events?.length || 0 },
     { name: 'Record', href: '/student/record', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>, count: records.length },
   ];
 
   // --- Student Feature Quick Links ---
   const studentFeatures = [
-    { name: 'Homework', description: 'Manage your homework assignments', icon: navigationItems[1].icon, href: '/student/homework', iconBg: 'bg-green-500', count: homework.length },
-    { name: 'Record', description: 'View your academic records', icon: navigationItems[7].icon, href: '/student/record', iconBg: 'bg-purple-500', count: 0 },
+    { name: 'Homework', description: 'Manage your homework assignments (posted >24h ago)', icon: navigationItems[1].icon, href: '/student/homework', iconBg: 'bg-green-500', count: homework.length },
+    { name: 'Record', description: 'View your academic records', icon: navigationItems[7].icon, href: '/student/record', iconBg: 'bg-purple-500', count: records.length },
     { name: 'Seminar', description: 'Discover upcoming seminars', icon: navigationItems[4].icon, href: '/student/seminars', iconBg: 'bg-violet-500', count: seminars.length },
     { name: 'Exam Schedules', description: 'View upcoming exam schedules', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 2v4M16 2v4M4 10h16" /></svg>, href: '/student/exams', iconBg: 'bg-red-500', count: tests.length },
     { name: 'Calendar View', description: 'View academic calendar', icon: navigationItems[5].icon, href: '/student/calendar', iconBg: 'bg-teal-500', count: 0 },
-    { name: 'Events', description: 'Stay updated with college events', icon: navigationItems[6].icon, href: '/student/events', iconBg: 'bg-orange-500', count: updates.length },
+    { name: 'Events', description: 'Stay updated with college events', icon: navigationItems[6].icon, href: '/student/events', iconBg: 'bg-orange-500', count: events?.length || 0 },
   ] as const;
 
   return (

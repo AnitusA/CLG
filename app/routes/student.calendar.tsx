@@ -13,26 +13,41 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { data: assignments, error: assignmentsError } = await supabase
     .from('assignments')
     .select('*')
+    .gte('due_date', new Date().toISOString().split('T')[0])
+    .eq('status', 'active')
     .order('due_date', { ascending: true });
 
-  const { data: exams, error: examsError } = await supabase
-    .from('tests')
+  const { data: records, error: recordsError } = await supabase
+    .from('records')
     .select('*')
-    .order('test_date', { ascending: true });
+    .gte('record_date', new Date().toISOString().split('T')[0])
+    .eq('status', 'active')
+    .order('record_date', { ascending: true });
 
   const { data: seminars, error: seminarsError } = await supabase
     .from('seminars')
     .select('*')
+    .gte('seminar_date', new Date().toISOString().split('T')[0])
+    .eq('status', 'active')
     .order('seminar_date', { ascending: true });
 
+  const { data: events, error: eventsError } = await supabase
+    .from('events')
+    .select('*')
+    .gte('event_date', new Date().toISOString().split('T')[0])
+    .eq('status', 'active')
+    .order('event_date', { ascending: true });
+
   if (assignmentsError) console.error('Error fetching assignments:', assignmentsError);
-  if (examsError) console.error('Error fetching exams:', examsError);
+  if (recordsError) console.error('Error fetching records:', recordsError);
   if (seminarsError) console.error('Error fetching seminars:', seminarsError);
+  if (eventsError) console.error('Error fetching events:', eventsError);
 
   return json({
     assignments: assignments || [],
-    exams: exams || [],
+    records: records || [],
     seminars: seminars || [],
+    events: events || [],
   });
 };
 
@@ -40,13 +55,17 @@ interface CalendarEvent {
   id: string;
   title: string;
   date: string;
-  type: 'assignment' | 'exam' | 'seminar';
+  type: 'assignment' | 'record' | 'seminar' | 'event';
   color: string;
   description?: string;
+  category?: string;
+  venue?: string;
+  speaker?: string;
+  event_type?: string;
 }
 
 export default function StudentCalendar() {
-  const { assignments, exams, seminars } = useLoaderData<typeof loader>();
+  const { assignments, records, seminars, events } = useLoaderData<typeof loader>();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [animateMonth, setAnimateMonth] = useState(false);
@@ -68,13 +87,14 @@ export default function StudentCalendar() {
         color: 'bg-blue-500',
         description: assignment.description,
       })),
-      ...exams.map((exam: any) => ({
-        id: exam.id,
-        title: exam.title,
-        date: exam.test_date,
-        type: 'exam' as const,
-        color: 'bg-red-500',
-        description: exam.description,
+      ...records.map((record: any) => ({
+        id: record.id,
+        title: record.title,
+        date: record.record_date,
+        type: 'record' as const,
+        color: 'bg-green-500',
+        description: record.description,
+        category: record.category,
       })),
       ...seminars.map((seminar: any) => ({
         id: seminar.id,
@@ -83,9 +103,21 @@ export default function StudentCalendar() {
         type: 'seminar' as const,
         color: 'bg-purple-500',
         description: seminar.description,
+        venue: seminar.venue,
+        speaker: seminar.speaker,
+      })),
+      ...events.map((event: any) => ({
+        id: event.id,
+        title: event.title,
+        date: event.event_date,
+        type: 'event' as const,
+        color: 'bg-orange-500',
+        description: event.description,
+        venue: event.venue,
+        event_type: event.event_type,
       })),
     ],
-    [assignments, exams, seminars]
+    [assignments, records, seminars, events]
   );
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
@@ -105,10 +137,12 @@ export default function StudentCalendar() {
     switch (event.type) {
       case 'assignment':
         return '📝';
-      case 'exam':
-        return '📚';
+      case 'record':
+        return '📋';
       case 'seminar':
         return '🎤';
+      case 'event':
+        return '🎉';
       default:
         return '📅';
     }
@@ -202,7 +236,7 @@ export default function StudentCalendar() {
                   {/* Mobile: number of events */}
                   <div className="block sm:hidden text-xs sm:text-sm mt-1 font-semibold">
                     {hasEvents ? (
-                      <span className="text-teal-600 dark:text-teal-400">{events.length} work{events.length > 1 ? 's' : ''}</span>
+                      <span className="text-teal-600 dark:text-teal-400">{events.length}</span>
                     ) : (
                       <span className="text-gray-400 dark:text-slate-500">—</span>
                     )}
@@ -228,13 +262,12 @@ export default function StudentCalendar() {
           </div>
         </div>
 
-        {/* Upcoming Events */}
+        {/* Upcoming Works */}
         <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-4 sm:p-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4">Upcoming Events</h2>
-          <div className="space-y-3">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4">Upcoming Works</h2>
+          <div className="space-y-3 max-h-96 overflow-y-auto">
             {calendarEvents
               .filter((event) => new Date(event.date) >= new Date())
-              .slice(0, 5)
               .map((event) => (
                 <button
                   key={`${event.type}-${event.id}`}
@@ -246,6 +279,9 @@ export default function StudentCalendar() {
                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{event.title}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       {new Date(event.date).toLocaleDateString()} • {event.type}
+                      {event.category && ` • ${event.category}`}
+                      {event.event_type && ` • ${event.event_type}`}
+                      {event.venue && ` • ${event.venue}`}
                     </p>
                   </div>
                 </button>
@@ -253,7 +289,7 @@ export default function StudentCalendar() {
           </div>
           {calendarEvents.filter((event) => new Date(event.date) >= new Date()).length === 0 && (
             <div className="text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400 text-sm">No upcoming events</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">No upcoming works</p>
             </div>
           )}
         </div>
@@ -279,6 +315,26 @@ export default function StudentCalendar() {
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 <span className="font-medium">Type:</span> {selectedEvent.type}
               </p>
+              {selectedEvent.category && (
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <span className="font-medium">Category:</span> {selectedEvent.category}
+                </p>
+              )}
+              {selectedEvent.event_type && (
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <span className="font-medium">Event Type:</span> {selectedEvent.event_type}
+                </p>
+              )}
+              {selectedEvent.venue && (
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <span className="font-medium">Venue:</span> {selectedEvent.venue}
+                </p>
+              )}
+              {selectedEvent.speaker && (
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <span className="font-medium">Speaker:</span> {selectedEvent.speaker}
+                </p>
+              )}
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 <span className="font-medium">Date:</span>{' '}
                 {new Date(selectedEvent.date).toLocaleDateString('en-US', {
