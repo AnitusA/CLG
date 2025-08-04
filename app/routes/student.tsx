@@ -31,11 +31,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   try {
     const [homeworkRes, assignmentsRes, testsRes, updatesRes, seminarsRes, syllabusRes, birthdaysRes, recordsRes, eventsRes] = await Promise.all([
-      // Homework: Only assignments posted more than 24 hours ago and still active
-      supabase.from('assignments')
+      // Homework: Only homework updated within the last 24 hours
+      supabase.from('homework')
         .select('*')
-        .lt('posted_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .eq('status', 'active'),
+        .gte('updated_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
       // Assignments: Only active (not past due date)
       supabase.from('assignments')
         .select('*')
@@ -43,18 +42,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         .eq('status', 'active'),
       supabase.from('tests').select('*'),
       supabase.from('updates').select('*'),
-      // Seminars: Only active (not past date)
+      // Seminars: Only active and scheduled (not past date)
       supabase.from('seminars')
         .select('*')
         .gte('seminar_date', new Date().toISOString().split('T')[0])
-        .eq('status', 'active'),
+        .in('status', ['active', 'scheduled']),
       supabase.from('syllabus').select('*'),
       supabase.from('birthdays').select('*'),
-      // Records: Only active (not past date)
+      // Records: Only future dates (not filtered by status)
       supabase.from('records')
         .select('*')
         .gte('record_date', new Date().toISOString().split('T')[0])
-        .eq('status', 'active'),
+        .order('record_date', { ascending: true }),
       // Events: Only active (not past date)
       supabase.from('events')
         .select('*')
@@ -124,16 +123,16 @@ export default function StudentDashboard() {
 
   // --- Student Feature Quick Links ---
   const studentFeatures = [
-    { name: 'Homework', description: 'Manage your homework assignments (posted >24h ago)', icon: navigationItems[1].icon, href: '/student/homework', iconBg: 'bg-green-500', count: homework.length },
-    { name: 'Record', description: 'View your academic records', icon: navigationItems[7].icon, href: '/student/record', iconBg: 'bg-purple-500', count: records.length },
-    { name: 'Seminar', description: 'Discover upcoming seminars', icon: navigationItems[4].icon, href: '/student/seminars', iconBg: 'bg-violet-500', count: seminars.length },
-    { name: 'Exam Schedules', description: 'View upcoming exam schedules', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 2v4M16 2v4M4 10h16" /></svg>, href: '/student/exams', iconBg: 'bg-red-500', count: tests.length },
-    { name: 'Calendar View', description: 'View academic calendar', icon: navigationItems[5].icon, href: '/student/calendar', iconBg: 'bg-teal-500', count: 0 },
-    { name: 'Events', description: 'Stay updated with college events', icon: navigationItems[6].icon, href: '/student/events', iconBg: 'bg-orange-500', count: events?.length || 0 },
+    { name: 'Homework', description: 'Manage your homework assignments (posted >24h ago)', icon: navigationItems[1].icon, href: '/student/homework', iconBg: 'bg-red-500', count: homework.length },
+    { name: 'Record', description: 'View your academic records', icon: navigationItems[7].icon, href: '/student/record', iconBg: 'bg-red-600', count: records.length },
+    { name: 'Seminar', description: 'Discover upcoming seminars', icon: navigationItems[4].icon, href: '/student/seminars', iconBg: 'bg-red-700', count: seminars.length },
+    { name: 'Exam Schedules', description: 'View upcoming exam schedules', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 2v4M16 2v4M4 10h16" /></svg>, href: '/student/exams', iconBg: 'bg-red-600', count: tests.length },
+    { name: 'Calendar View', description: 'View academic calendar', icon: navigationItems[5].icon, href: '/student/calendar', iconBg: 'bg-red-700', count: 0 },
+    { name: 'Events', description: 'Stay updated with college events', icon: navigationItems[6].icon, href: '/student/events', iconBg: 'bg-red-500', count: events?.length || 0 },
   ] as const;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-red-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="flex h-screen overflow-hidden">
         {/* SIDEBAR */}
         <aside
@@ -147,7 +146,7 @@ export default function StudentDashboard() {
             {/* LOGO */}
             <div className="flex items-center h-16 px-4 border-b border-gray-200 dark:border-slate-700">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-red-600 to-red-700 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">🧑‍🎓</span>
                 </div>
                 <span className="text-xl font-bold text-gray-900 dark:text-white">Student Portal</span>
@@ -164,7 +163,7 @@ export default function StudentDashboard() {
                     className={`
                       flex items-center px-3 py-2 rounded-md font-medium text-[15px] transition-colors
                       ${isActive
-                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                        ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'
                         : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800'
                       }
                       space-x-3
@@ -186,7 +185,7 @@ export default function StudentDashboard() {
             {/* User Profile */}
             <div className="px-4 py-4 border-t border-gray-200 dark:border-slate-700">
               <div className="flex items-center">
-                <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center">
                   <span className="text-white text-sm font-semibold">
                     {user?.name?.[0]?.toUpperCase() ?? 'ST'}
                   </span>
@@ -226,10 +225,10 @@ export default function StudentDashboard() {
                     </svg>
                   </button>
                   <div>
-                    <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                    <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
                       Student Dashboard
                     </h1>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">CLG Student Portal</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Focus on career growth</p>
                   </div>
                 </div>
                 {/* Current User and Logout - right zone */}
@@ -241,7 +240,7 @@ export default function StudentDashboard() {
                         {new Date(currentDate).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center">
                       <span className="text-white text-sm font-semibold">{user?.name?.[0]?.toUpperCase() ?? 'ST'}</span>
                     </div>
                   </div>
@@ -278,7 +277,7 @@ export default function StudentDashboard() {
                       </p>
                     </div>
                     <div className="hidden md:block">
-                      <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+                      <div className="w-20 h-20 bg-gradient-to-r from-red-400 to-red-600 rounded-full flex items-center justify-center">
                         <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>

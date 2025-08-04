@@ -10,11 +10,12 @@ export const meta: MetaFunction = () => [{ title: 'Academic Record - Student Das
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await requireStudent(request);
 
-  // Fetch general records for students
+  // Fetch general records for students (only future dates)
   const { data: records, error } = await supabase
     .from('records')
     .select('*')
-    .order('record_date', { ascending: false });
+    .gte('record_date', new Date().toISOString().split('T')[0])
+    .order('record_date', { ascending: true });
 
   if (error) {
     console.error('Error fetching records:', error);
