@@ -14,7 +14,7 @@ export const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
 export type Student = {
   id: string;
   register_number: string;
-  password: string; // Changed from password_hash to password
+  password_hash: string;
   created_at: string;
   updated_at: string;
 };
