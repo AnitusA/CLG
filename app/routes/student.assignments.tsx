@@ -10,6 +10,7 @@ export const meta: MetaFunction = () => [{ title: 'Assignments - Student Portal'
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await requireStudent(request);
 
+  // Get all assignments, both active and completed
   const { data: assignments, error } = await supabase
     .from('assignments')
     .select('*')
@@ -22,12 +23,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   return json({ 
     user,
-    assignments: assignments || []
+    assignments: assignments || [],
+    currentDate: new Date().toISOString().split('T')[0] // Send current date to compare with due dates
   });
 };
 
 export default function StudentAssignments() {
-  const { assignments } = useLoaderData<typeof loader>();
+  const { assignments, currentDate } = useLoaderData<typeof loader>();
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -48,6 +50,16 @@ export default function StudentAssignments() {
     }
   };
 
+  // Filter assignments into future (upcoming) and past/completed
+  const futureAssignments = assignments
+    .filter(a => a.status === 'active' && a.due_date > currentDate)
+    .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime());
+  
+  const pastOrCompletedAssignments = assignments
+    .filter(a => a.status === 'completed' || a.due_date <= currentDate)
+    .sort((a, b) => new Date(b.due_date).getTime() - new Date(a.due_date).getTime()); // Most recent first
+    
+  // Keep these for stats
   const activeAssignments = assignments.filter(a => a.status === 'active');
   const completedAssignments = assignments.filter(a => a.status === 'completed');
 
@@ -124,12 +136,12 @@ export default function StudentAssignments() {
         </div>
       </div>
 
-      {/* Active Assignments */}
-      {activeAssignments.length > 0 && (
+      {/* Future Assignments - Sorted by date */}
+      {futureAssignments.length > 0 && (
         <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">⏰ Active Assignments</h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">⏰ Upcoming Assignments</h2>
           <div className="grid gap-4">
-            {activeAssignments.map((assignment) => (
+            {futureAssignments.map((assignment) => (
               <div key={assignment.id} className="bg-white/50 dark:bg-slate-700/50 rounded-lg p-6 border border-white/20">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -148,6 +160,12 @@ export default function StudentAssignments() {
                         </svg>
                         Due: {formatDate(assignment.due_date)}
                       </span>
+                      <span className="flex items-center">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {Math.ceil((new Date(assignment.due_date).getTime() - new Date(currentDate).getTime()) / (1000 * 60 * 60 * 24))} days left
+                      </span>
                     </div>
                   </div>
                   <div className="flex flex-col space-y-2 ml-4">
@@ -162,12 +180,12 @@ export default function StudentAssignments() {
         </div>
       )}
 
-      {/* Completed Assignments */}
-      {completedAssignments.length > 0 && (
-        <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">✅ Completed Assignments</h2>
+      {/* Past or Completed Assignments */}
+      {pastOrCompletedAssignments.length > 0 && (
+        <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-6 mt-8">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">📚 Past or Completed Assignments</h2>
           <div className="grid gap-4">
-            {completedAssignments.map((assignment) => (
+            {pastOrCompletedAssignments.map((assignment) => (
               <div key={assignment.id} className="bg-white/50 dark:bg-slate-700/50 rounded-lg p-6 border border-white/20 opacity-75">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -185,6 +203,9 @@ export default function StudentAssignments() {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                         Due: {formatDate(assignment.due_date)}
+                        {assignment.due_date <= currentDate && assignment.status !== 'completed' && (
+                          <span className="ml-2 text-red-500 font-medium">(Past due)</span>
+                        )}
                       </span>
                     </div>
                   </div>
@@ -212,6 +233,18 @@ export default function StudentAssignments() {
           <p className="text-gray-600 dark:text-gray-400">
             You're all caught up! No assignments have been assigned yet.
           </p>
+        </div>
+      )}
+      
+      {/* No Future Assignments */}
+      {assignments.length > 0 && futureAssignments.length === 0 && (
+        <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">⏰ Upcoming Assignments</h2>
+          <div className="p-8 text-center">
+            <p className="text-gray-600 dark:text-gray-400">
+              You don't have any upcoming assignments at the moment. All assignments are either completed or past due.
+            </p>
+          </div>
         </div>
       )}
     </div>

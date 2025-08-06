@@ -13,26 +13,58 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { data: assignments, error: assignmentsError } = await supabase
     .from('assignments')
     .select('*')
+    .gte('due_date', new Date().toISOString().split('T')[0])
+    .eq('status', 'active')
     .order('due_date', { ascending: true });
 
-  const { data: exams, error: examsError } = await supabase
-    .from('tests')
+  const { data: records, error: recordsError } = await supabase
+    .from('records')
     .select('*')
-    .order('test_date', { ascending: true });
+    .gte('record_date', new Date().toISOString().split('T')[0])
+    .order('record_date', { ascending: true });
 
   const { data: seminars, error: seminarsError } = await supabase
     .from('seminars')
     .select('*')
+    .gte('seminar_date', new Date().toISOString().split('T')[0])
+    .in('status', ['active', 'scheduled'])
     .order('seminar_date', { ascending: true });
 
+  const { data: events, error: eventsError } = await supabase
+    .from('events')
+    .select('*')
+    .gte('event_date', new Date().toISOString().split('T')[0])
+    .in('status', ['active', 'upcoming'])
+    .order('event_date', { ascending: true });
+
+  const { data: tests, error: testsError } = await supabase
+    .from('tests')
+    .select('*')
+    .gte('test_date', new Date().toISOString().split('T')[0])
+    .neq('status', 'completed')
+    .order('test_date', { ascending: true });
+
+  const { data: examSubjects, error: examSubjectsError } = await supabase
+    .from('exam_subjects')
+    .select('*, exams(*)')
+    .gte('exam_date', new Date().toISOString().split('T')[0])
+    .neq('status', 'completed')
+    .order('exam_date', { ascending: true });
+
   if (assignmentsError) console.error('Error fetching assignments:', assignmentsError);
-  if (examsError) console.error('Error fetching exams:', examsError);
+  if (recordsError) console.error('Error fetching records:', recordsError);
   if (seminarsError) console.error('Error fetching seminars:', seminarsError);
+  if (eventsError) console.error('Error fetching events:', eventsError);
+  if (testsError) console.error('Error fetching tests:', testsError);
+  if (examSubjectsError) console.error('Error fetching exam subjects:', examSubjectsError);
 
   return json({
     assignments: assignments || [],
-    exams: exams || [],
+    records: records || [],
     seminars: seminars || [],
+    events: events || [],
+    tests: tests || [],
+    examSubjects: examSubjects || [],
   });
 };
 
@@ -40,15 +72,22 @@ interface CalendarEvent {
   id: string;
   title: string;
   date: string;
-  type: 'assignment' | 'exam' | 'seminar';
+  type: 'assignment' | 'record' | 'seminar' | 'event' | 'test' | 'exam';
   color: string;
   description?: string;
+  category?: string;
+  venue?: string;
+  speaker?: string;
+  event_type?: string;
+  subject?: string;
+  exam_name?: string;
 }
 
 export default function StudentCalendar() {
-  const { assignments, exams, seminars } = useLoaderData<typeof loader>();
+  const { assignments, records, seminars, events, tests, examSubjects } = useLoaderData<typeof loader>();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [selectedDayEvents, setSelectedDayEvents] = useState<{ day: number; events: CalendarEvent[] } | null>(null);
   const [animateMonth, setAnimateMonth] = useState(false);
 
   // Trigger animation on month change
@@ -65,27 +104,59 @@ export default function StudentCalendar() {
         title: assignment.title,
         date: assignment.due_date,
         type: 'assignment' as const,
-        color: 'bg-blue-500',
+        color: 'bg-orange-500',
         description: assignment.description,
       })),
-      ...exams.map((exam: any) => ({
-        id: exam.id,
-        title: exam.title,
-        date: exam.test_date,
-        type: 'exam' as const,
-        color: 'bg-red-500',
-        description: exam.description,
+      ...records.map((record: any) => ({
+        id: record.id,
+        title: record.title,
+        date: record.record_date,
+        type: 'record' as const,
+        color: 'bg-amber-500',
+        description: record.description,
+        category: record.category,
       })),
       ...seminars.map((seminar: any) => ({
         id: seminar.id,
         title: seminar.title,
         date: seminar.seminar_date,
         type: 'seminar' as const,
-        color: 'bg-purple-500',
+        color: 'bg-red-500',
         description: seminar.description,
+        venue: seminar.venue,
+        speaker: seminar.speaker,
+      })),
+      ...events.map((event: any) => ({
+        id: event.id,
+        title: event.title,
+        date: event.event_date,
+        type: 'event' as const,
+        color: 'bg-orange-600',
+        description: event.description,
+        venue: event.venue,
+        event_type: event.event_type,
+      })),
+      ...tests.map((test: any) => ({
+        id: test.id,
+        title: test.title,
+        date: test.test_date,
+        type: 'test' as const,
+        color: 'bg-red-600',
+        description: test.description,
+        subject: test.subject,
+      })),
+      ...examSubjects.map((examSubject: any) => ({
+        id: examSubject.id,
+        title: `${examSubject.exams?.exam_name || 'Exam'} - ${examSubject.subject}`,
+        date: examSubject.exam_date,
+        type: 'exam' as const,
+        color: 'bg-red-700',
+        description: examSubject.exams?.description,
+        subject: examSubject.subject,
+        exam_name: examSubject.exams?.exam_name,
       })),
     ],
-    [assignments, exams, seminars]
+    [assignments, records, seminars, events, tests, examSubjects]
   );
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
@@ -105,10 +176,16 @@ export default function StudentCalendar() {
     switch (event.type) {
       case 'assignment':
         return '📝';
-      case 'exam':
-        return '📚';
+      case 'record':
+        return '📋';
       case 'seminar':
         return '🎤';
+      case 'event':
+        return '🎉';
+      case 'test':
+        return '📊';
+      case 'exam':
+        return '📚';
       default:
         return '📅';
     }
@@ -122,6 +199,13 @@ export default function StudentCalendar() {
           .neon-glow {
             box-shadow: 0 0 5px rgba(0, 255, 255, 0.7), 0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.3);
           }
+          .col-start-1 { grid-column-start: 1; }
+          .col-start-2 { grid-column-start: 2; }
+          .col-start-3 { grid-column-start: 3; }
+          .col-start-4 { grid-column-start: 4; }
+          .col-start-5 { grid-column-start: 5; }
+          .col-start-6 { grid-column-start: 6; }
+          .col-start-7 { grid-column-start: 7; }
         `}
       </style>
 
@@ -169,24 +253,26 @@ export default function StudentCalendar() {
 
           {/* Calendar Grid */}
           <div
-            className={`grid grid-cols-7 gap-1 sm:gap-2 text-center text-sm sm:text-base transition-all duration-500 ease-in-out ${
+            className={`grid grid-cols-7 gap-2 sm:gap-3 text-center text-sm sm:text-base transition-all duration-500 ease-in-out ${
               animateMonth ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
             }`}
           >
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-              <div key={day} className="font-semibold text-gray-700 dark:text-gray-300">
+              <div key={day} className="font-semibold text-gray-700 dark:text-gray-300 py-2">
                 {day}
               </div>
             ))}
-            {paddingDays.map((_, index) => (
-              <div key={`padding-${index}`} className="aspect-square bg-gray-50 dark:bg-slate-900/50 rounded-lg"></div>
-            ))}
-            {daysArray.map((day) => {
+            {daysArray.map((day, index) => {
               const events = getEventsForDay(day);
               const isToday =
                 new Date().toDateString() ===
                 new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
               const hasEvents = events.length > 0;
+              
+              // Calculate the actual grid position for the first row
+              const dayOfWeek = new Date(currentDate.getFullYear(), currentDate.getMonth(), day).getDay();
+              const isFirstWeek = day <= 7;
+              const gridColumn = isFirstWeek ? `col-start-${dayOfWeek + 1}` : '';
 
               return (
                 <div
@@ -195,16 +281,24 @@ export default function StudentCalendar() {
                   transition-transform duration-300 ease-in-out hover:scale-105 cursor-pointer neon-glow
                   ${isToday ? 'bg-blue-100 dark:bg-blue-900/40 border-blue-400 dark:border-blue-700 shadow-blue-400 shadow-md animate-pulse' : ''}
                   ${hasEvents ? 'border-2 border-teal-400 dark:border-teal-500 shadow-teal-400/30 shadow-sm' : 'border-gray-200 dark:border-slate-700'}
-                  bg-white dark:bg-slate-800`}
+                  bg-white dark:bg-slate-800 ${gridColumn}`}
                 >
                   <span className="text-gray-900 dark:text-white font-medium text-sm sm:text-base">{day}</span>
 
                   {/* Mobile: number of events */}
-                  <div className="block sm:hidden text-xs sm:text-sm mt-1 font-semibold">
+                  <div className="block sm:hidden mt-1">
                     {hasEvents ? (
-                      <span className="text-teal-600 dark:text-teal-400">{events.length} work{events.length > 1 ? 's' : ''}</span>
+                      <button
+                        onClick={() => {
+                          // Open modal with day events
+                          setSelectedDayEvents({ day, events });
+                        }}
+                        className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 min-w-[24px] h-6 flex items-center justify-center"
+                      >
+                        {events.length}
+                      </button>
                     ) : (
-                      <span className="text-gray-400 dark:text-slate-500">—</span>
+                      <div className="text-gray-400 dark:text-slate-500 text-xs">—</div>
                     )}
                   </div>
 
@@ -228,13 +322,12 @@ export default function StudentCalendar() {
           </div>
         </div>
 
-        {/* Upcoming Events */}
+        {/* Upcoming Works */}
         <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-4 sm:p-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4">Upcoming Events</h2>
-          <div className="space-y-3">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4">Upcoming Works</h2>
+          <div className="space-y-3 max-h-96 overflow-y-auto">
             {calendarEvents
               .filter((event) => new Date(event.date) >= new Date())
-              .slice(0, 5)
               .map((event) => (
                 <button
                   key={`${event.type}-${event.id}`}
@@ -246,6 +339,9 @@ export default function StudentCalendar() {
                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{event.title}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       {new Date(event.date).toLocaleDateString()} • {event.type}
+                      {event.category && ` • ${event.category}`}
+                      {event.event_type && ` • ${event.event_type}`}
+                      {event.venue && ` • ${event.venue}`}
                     </p>
                   </div>
                 </button>
@@ -253,11 +349,62 @@ export default function StudentCalendar() {
           </div>
           {calendarEvents.filter((event) => new Date(event.date) >= new Date()).length === 0 && (
             <div className="text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400 text-sm">No upcoming events</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">No upcoming works</p>
             </div>
           )}
         </div>
       </div>
+
+      {/* Day Events Modal (Mobile) */}
+      {selectedDayEvents && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-auto">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-6 max-w-md w-full max-h-[80vh] overflow-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
+                {currentDate.toLocaleDateString('en-US', { month: 'long' })} {selectedDayEvents.day}
+              </h3>
+              <button
+                onClick={() => setSelectedDayEvents(null)}
+                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+                aria-label="Close modal"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-3">
+              {selectedDayEvents.events.map((event) => (
+                <button
+                  key={event.id}
+                  onClick={() => {
+                    setSelectedDayEvents(null);
+                    setSelectedEvent(event);
+                  }}
+                  className="w-full flex items-center space-x-3 p-3 bg-gray-50 dark:bg-slate-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition text-left"
+                >
+                  <div className="text-2xl">{renderEventIcon(event)}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{event.title}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">
+                      {event.type}
+                      {event.category && ` • ${event.category}`}
+                      {event.event_type && ` • ${event.event_type}`}
+                      {event.venue && ` • ${event.venue}`}
+                      {event.subject && ` • ${event.subject}`}
+                      {event.exam_name && ` • ${event.exam_name}`}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setSelectedDayEvents(null)}
+              className="mt-4 w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 dark:bg-orange-500 dark:hover:bg-orange-600 transition"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Event Modal */}
       {selectedEvent && (
@@ -279,6 +426,36 @@ export default function StudentCalendar() {
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 <span className="font-medium">Type:</span> {selectedEvent.type}
               </p>
+              {selectedEvent.category && (
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <span className="font-medium">Category:</span> {selectedEvent.category}
+                </p>
+              )}
+              {selectedEvent.event_type && (
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <span className="font-medium">Event Type:</span> {selectedEvent.event_type}
+                </p>
+              )}
+              {selectedEvent.venue && (
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <span className="font-medium">Venue:</span> {selectedEvent.venue}
+                </p>
+              )}
+              {selectedEvent.speaker && (
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <span className="font-medium">Speaker:</span> {selectedEvent.speaker}
+                </p>
+              )}
+              {selectedEvent.subject && (
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <span className="font-medium">Subject:</span> {selectedEvent.subject}
+                </p>
+              )}
+              {selectedEvent.exam_name && (
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <span className="font-medium">Exam:</span> {selectedEvent.exam_name}
+                </p>
+              )}
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 <span className="font-medium">Date:</span>{' '}
                 {new Date(selectedEvent.date).toLocaleDateString('en-US', {

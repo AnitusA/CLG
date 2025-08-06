@@ -5,7 +5,7 @@ import { useState } from 'react';
 
 import { requireStudent } from '~/lib/session.server';
 import { supabase } from '~/lib/supabase.server';
-import { destroySession } from '~/lib/session.server'; // Assuming you have a session destruction utility
+import { destroySession, getSession } from '~/lib/session.server';
 
 // Define types for TypeScript
 interface User {
@@ -30,15 +30,35 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const user = await requireStudent(request);
 
   try {
-    const [homeworkRes, assignmentsRes, testsRes, updatesRes, seminarsRes, syllabusRes, birthdaysRes, recordsRes] = await Promise.all([
-      supabase.from('homework').select('*'),
-      supabase.from('assignments').select('*'),
+    const [homeworkRes, assignmentsRes, testsRes, updatesRes, seminarsRes, syllabusRes, birthdaysRes, recordsRes, eventsRes] = await Promise.all([
+      // Homework: Only homework updated within the last 24 hours
+      supabase.from('homework')
+        .select('*')
+        .gte('updated_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
+      // Assignments: Only active (not past due date)
+      supabase.from('assignments')
+        .select('*')
+        .gte('due_date', new Date().toISOString().split('T')[0])
+        .eq('status', 'active'),
       supabase.from('tests').select('*'),
       supabase.from('updates').select('*'),
-      supabase.from('seminars').select('*'),
+      // Seminars: Only active and scheduled (not past date)
+      supabase.from('seminars')
+        .select('*')
+        .gte('seminar_date', new Date().toISOString().split('T')[0])
+        .in('status', ['active', 'scheduled']),
       supabase.from('syllabus').select('*'),
       supabase.from('birthdays').select('*'),
-      supabase.from('records').select('*'),
+      // Records: Only future dates (not filtered by status)
+      supabase.from('records')
+        .select('*')
+        .gte('record_date', new Date().toISOString().split('T')[0])
+        .order('record_date', { ascending: true }),
+      // Events: Only active (not past date)
+      supabase.from('events')
+        .select('*')
+        .gte('event_date', new Date().toISOString().split('T')[0])
+        .eq('status', 'active'),
     ]);
 
     const logErr = (name: string, { error }: { error: any }) => {
@@ -52,6 +72,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     logErr('syllabus', syllabusRes);
     logErr('birthdays', birthdaysRes);
     logErr('records', recordsRes);
+    logErr('events', eventsRes);
 
     return json({
       user,
@@ -63,15 +84,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       syllabusItems: syllabusRes.data || [],
       birthdays: birthdaysRes.data || [],
       records: recordsRes.data || [],
+      events: eventsRes.data || [],
     });
   } catch (error) {
     console.error('Loader error:', error);
-    return json({ user, homework: [], assignments: [], tests: [], updates: [], seminars: [], syllabusItems: [], birthdays: [] }, { status: 500 });
+    return json({ user, homework: [], assignments: [], tests: [], updates: [], seminars: [], syllabusItems: [], birthdays: [], records: [], events: [] }, { status: 500 });
   }
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  const session = await requireStudent(request);
+  const session = await getSession(request.headers.get('Cookie'));
   const sessionCookie = await destroySession(session);
   return redirect('/login', {
     headers: {
@@ -81,7 +103,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function StudentDashboard() {
-  const { user, homework, assignments, tests, updates, seminars, syllabusItems, birthdays, records } = useLoaderData<any>();
+  const { user, homework, assignments, tests, updates, seminars, syllabusItems, birthdays, records, events } = useLoaderData<any>();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isNestedRoute = location.pathname !== '/student';
@@ -90,27 +112,27 @@ export default function StudentDashboard() {
   // --- Navigation Items ---
   const navigationItems = [
     { name: 'Dashboard', href: '/student', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h2a2 2 0 012 2v2H8V5z" /></svg> },
-    { name: 'Homework', href: '/student/homework', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg> },
+    { name: 'Homework', href: '/student/homework', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>, count: homework.length },
     { name: 'Assignments', href: '/student/assignments', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>, count: assignments.length },
     { name: 'Exams', href: '/student/exams', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v6a2 2 0 002 2h2m0-8V9a2 2 0 012-2h2a2 2 0 012 2v6a2 2 0 01-2 2H9V5z" /></svg> },
     { name: 'Seminars', href: '/student/seminars', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 7v-6m0 0l-9-5m9 5l9-5" /></svg>, count: seminars.length },
     { name: 'Calendar', href: '/student/calendar', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 2v4M16 2v4M3 10h18" /></svg> },
-    { name: 'Events', href: '/student/events', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h8M12 8v8" /></svg> },
+    { name: 'Events', href: '/student/events', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h8M12 8v8" /></svg>, count: events?.length || 0 },
     { name: 'Record', href: '/student/record', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>, count: records.length },
   ];
 
   // --- Student Feature Quick Links ---
   const studentFeatures = [
-    { name: 'Homework', description: 'Manage your homework assignments', icon: navigationItems[1].icon, href: '/student/homework', iconBg: 'bg-green-500', count: homework.length },
-    { name: 'Record', description: 'View your academic records', icon: navigationItems[7].icon, href: '/student/record', iconBg: 'bg-purple-500', count: 0 },
-    { name: 'Seminar', description: 'Discover upcoming seminars', icon: navigationItems[4].icon, href: '/student/seminars', iconBg: 'bg-violet-500', count: seminars.length },
-    { name: 'Exam Schedules', description: 'View upcoming exam schedules', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 2v4M16 2v4M4 10h16" /></svg>, href: '/student/exams', iconBg: 'bg-red-500', count: tests.length },
-    { name: 'Calendar View', description: 'View academic calendar', icon: navigationItems[5].icon, href: '/student/calendar', iconBg: 'bg-teal-500', count: 0 },
-    { name: 'Events', description: 'Stay updated with college events', icon: navigationItems[6].icon, href: '/student/events', iconBg: 'bg-orange-500', count: updates.length },
+    { name: 'Homework', description: 'Manage your homework assignments (posted >24h ago)', icon: navigationItems[1].icon, href: '/student/homework', iconBg: 'bg-red-500', count: homework.length },
+    { name: 'Record', description: 'View your academic records', icon: navigationItems[7].icon, href: '/student/record', iconBg: 'bg-red-600', count: records.length },
+    { name: 'Seminar', description: 'Discover upcoming seminars', icon: navigationItems[4].icon, href: '/student/seminars', iconBg: 'bg-red-700', count: seminars.length },
+    { name: 'Exam Schedules', description: 'View upcoming exam schedules', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 2v4M16 2v4M4 10h16" /></svg>, href: '/student/exams', iconBg: 'bg-red-600', count: tests.length },
+    { name: 'Calendar View', description: 'View academic calendar', icon: navigationItems[5].icon, href: '/student/calendar', iconBg: 'bg-red-700', count: 0 },
+    { name: 'Events', description: 'Stay updated with college events', icon: navigationItems[6].icon, href: '/student/events', iconBg: 'bg-red-500', count: events?.length || 0 },
   ] as const;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-red-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
       <div className="flex h-screen overflow-hidden">
         {/* SIDEBAR */}
         <aside
@@ -124,7 +146,7 @@ export default function StudentDashboard() {
             {/* LOGO */}
             <div className="flex items-center h-16 px-4 border-b border-gray-200 dark:border-slate-700">
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-red-600 to-red-700 rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-sm">🧑‍🎓</span>
                 </div>
                 <span className="text-xl font-bold text-gray-900 dark:text-white">Student Portal</span>
@@ -141,7 +163,7 @@ export default function StudentDashboard() {
                     className={`
                       flex items-center px-3 py-2 rounded-md font-medium text-[15px] transition-colors
                       ${isActive
-                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                        ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'
                         : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-800'
                       }
                       space-x-3
@@ -163,7 +185,7 @@ export default function StudentDashboard() {
             {/* User Profile */}
             <div className="px-4 py-4 border-t border-gray-200 dark:border-slate-700">
               <div className="flex items-center">
-                <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center">
                   <span className="text-white text-sm font-semibold">
                     {user?.name?.[0]?.toUpperCase() ?? 'ST'}
                   </span>
@@ -203,10 +225,10 @@ export default function StudentDashboard() {
                     </svg>
                   </button>
                   <div>
-                    <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                    <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
                       Student Dashboard
                     </h1>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">CLG Student Portal</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Focus on career growth</p>
                   </div>
                 </div>
                 {/* Current User and Logout - right zone */}
@@ -218,7 +240,7 @@ export default function StudentDashboard() {
                         {new Date(currentDate).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center">
                       <span className="text-white text-sm font-semibold">{user?.name?.[0]?.toUpperCase() ?? 'ST'}</span>
                     </div>
                   </div>
@@ -255,7 +277,7 @@ export default function StudentDashboard() {
                       </p>
                     </div>
                     <div className="hidden md:block">
-                      <div className="w-20 h-20 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+                      <div className="w-20 h-20 bg-gradient-to-r from-red-400 to-red-600 rounded-full flex items-center justify-center">
                         <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
