@@ -1,32 +1,7 @@
--- COMPLETE DATABASE RESET AND SETUP FOR CLG ADMIN SYSTEM
--- Run this entire script in your Supabase SQL Editor
+-- Create students table in Supabase
+-- Run this SQL in your Supabase SQL Editor
 
--- First, drop all existing tables and related objects to start completely fresh
-DROP TABLE IF EXISTS seminars CASCADE;
-DROP TABLE IF EXISTS birthdays CASCADE;
-DROP TABLE IF EXISTS syllabus CASCADE;
-DROP TABLE IF EXISTS tests CASCADE;
-DROP TABLE IF EXISTS notes CASCADE;
-DROP TABLE IF EXISTS daily_updates CASCADE;
-DROP TABLE IF EXISTS homework CASCADE;
-DROP TABLE IF EXISTS deadlines CASCADE;
-DROP TABLE IF EXISTS assignments CASCADE;
-DROP TABLE IF EXISTS students CASCADE;
-
--- Drop the function if it exists
-DROP FUNCTION IF EXISTS update_updated_at_column() CASCADE;
-
--- Create the trigger function first
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
--- 1. Create students table
-CREATE TABLE students (
+CREATE TABLE IF NOT EXISTS students (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     register_number VARCHAR(50) UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
@@ -34,8 +9,11 @@ CREATE TABLE students (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 2. Create assignments table
-CREATE TABLE assignments (
+-- Create an index on register_number for faster lookups
+CREATE INDEX IF NOT EXISTS idx_students_register_number ON students(register_number);
+
+-- Create assignments table
+CREATE TABLE IF NOT EXISTS assignments (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
@@ -47,8 +25,8 @@ CREATE TABLE assignments (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 3. Create deadlines table
-CREATE TABLE deadlines (
+-- Create deadlines table
+CREATE TABLE IF NOT EXISTS deadlines (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT,
@@ -60,8 +38,8 @@ CREATE TABLE deadlines (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 4. Create homework table
-CREATE TABLE homework (
+-- Create homework table
+CREATE TABLE IF NOT EXISTS homework (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
@@ -74,8 +52,8 @@ CREATE TABLE homework (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 5. Create daily_updates table
-CREATE TABLE daily_updates (
+-- Create daily_updates table
+CREATE TABLE IF NOT EXISTS daily_updates (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     title TEXT NOT NULL,
     content TEXT NOT NULL,
@@ -87,8 +65,8 @@ CREATE TABLE daily_updates (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 6. Create notes table
-CREATE TABLE notes (
+-- Create notes table
+CREATE TABLE IF NOT EXISTS notes (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     title TEXT NOT NULL,
     content TEXT NOT NULL,
@@ -99,8 +77,8 @@ CREATE TABLE notes (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 7. Create tests table
-CREATE TABLE tests (
+-- Create tests table
+CREATE TABLE IF NOT EXISTS tests (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT,
@@ -114,8 +92,8 @@ CREATE TABLE tests (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 8. Create syllabus table
-CREATE TABLE syllabus (
+-- Create syllabus table
+CREATE TABLE IF NOT EXISTS syllabus (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     subject VARCHAR(100) NOT NULL,
     academic_year VARCHAR(20) NOT NULL,
@@ -128,8 +106,8 @@ CREATE TABLE syllabus (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 9. Create birthdays table
-CREATE TABLE birthdays (
+-- Create birthdays table
+CREATE TABLE IF NOT EXISTS birthdays (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     name TEXT NOT NULL,
     birth_date DATE NOT NULL,
@@ -142,8 +120,8 @@ CREATE TABLE birthdays (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- 10. Create seminars table
-CREATE TABLE seminars (
+-- Create seminars table
+CREATE TABLE IF NOT EXISTS seminars (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
@@ -165,22 +143,16 @@ CREATE TABLE seminars (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create indexes for better performance (after tables are created)
-CREATE INDEX idx_students_register_number ON students(register_number);
-CREATE INDEX idx_assignments_subject ON assignments(subject);
-CREATE INDEX idx_assignments_due_date ON assignments(due_date);
-CREATE INDEX idx_deadlines_deadline_date ON deadlines(deadline_date);
-CREATE INDEX idx_homework_subject ON homework(subject);
-CREATE INDEX idx_homework_assignment_date ON homework(assignment_date);
-CREATE INDEX idx_daily_updates_publish_date ON daily_updates(publish_date);
-CREATE INDEX idx_notes_subject ON notes(subject);
-CREATE INDEX idx_tests_subject ON tests(subject);
-CREATE INDEX idx_tests_test_date ON tests(test_date);
-CREATE INDEX idx_syllabus_subject ON syllabus(subject);
-CREATE INDEX idx_birthdays_birth_date ON birthdays(birth_date);
-CREATE INDEX idx_seminars_seminar_date ON seminars(seminar_date);
+-- Create a trigger to automatically update the updated_at column
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
 
--- Create triggers for automatic updated_at handling
+-- Create triggers for all tables
 CREATE TRIGGER update_students_updated_at 
     BEFORE UPDATE ON students 
     FOR EACH ROW 
@@ -231,7 +203,21 @@ CREATE TRIGGER update_seminars_updated_at
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
 
--- Enable Row Level Security for all tables
+-- Create indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_assignments_subject ON assignments(subject);
+CREATE INDEX IF NOT EXISTS idx_assignments_due_date ON assignments(due_date);
+CREATE INDEX IF NOT EXISTS idx_deadlines_deadline_date ON deadlines(deadline_date);
+CREATE INDEX IF NOT EXISTS idx_homework_subject ON homework(subject);
+CREATE INDEX IF NOT EXISTS idx_homework_assignment_date ON homework(assignment_date);
+CREATE INDEX IF NOT EXISTS idx_daily_updates_publish_date ON daily_updates(publish_date);
+CREATE INDEX IF NOT EXISTS idx_notes_subject ON notes(subject);
+CREATE INDEX IF NOT EXISTS idx_tests_subject ON tests(subject);
+CREATE INDEX IF NOT EXISTS idx_tests_test_date ON tests(test_date);
+CREATE INDEX IF NOT EXISTS idx_syllabus_subject ON syllabus(subject);
+CREATE INDEX IF NOT EXISTS idx_birthdays_birth_date ON birthdays(birth_date);
+CREATE INDEX IF NOT EXISTS idx_seminars_seminar_date ON seminars(seminar_date);
+
+-- Optional: Enable Row Level Security (RLS) for better security
 ALTER TABLE students ENABLE ROW LEVEL SECURITY;
 ALTER TABLE assignments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE deadlines ENABLE ROW LEVEL SECURITY;
@@ -243,7 +229,7 @@ ALTER TABLE syllabus ENABLE ROW LEVEL SECURITY;
 ALTER TABLE birthdays ENABLE ROW LEVEL SECURITY;
 ALTER TABLE seminars ENABLE ROW LEVEL SECURITY;
 
--- Create policies that allow service role to access everything
+-- Create policies that allow service role to do everything
 CREATE POLICY "Enable all operations for service role" ON students
     FOR ALL USING (auth.role() = 'service_role');
 
@@ -273,14 +259,3 @@ CREATE POLICY "Enable all operations for service role" ON birthdays
 
 CREATE POLICY "Enable all operations for service role" ON seminars
     FOR ALL USING (auth.role() = 'service_role');
-
--- Insert some sample data for testing (optional)
-INSERT INTO students (register_number, password_hash) VALUES 
-('ADMIN001', '$2a$10$example.hash.for.admin'),
-('STU001', '$2a$10$example.hash.for.student');
-
--- Success message
-DO $$
-BEGIN
-    RAISE NOTICE 'Database setup completed successfully! All 10 tables created with proper structure.';
-END $$;
