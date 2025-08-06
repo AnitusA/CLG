@@ -27,7 +27,7 @@ Run the dev server:
 npm run dev
 ```
 
-**Admin Login:** Use pass key `admin123` at http://localhost:5173/login/admin
+**Admin Login:** at http://localhost:5173/login/admin
 
 ## Database Setup
 
