@@ -44,8 +44,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         content,
         subject,
         chapter,
-        is_visible: visibility === 'visible',
-        created_at: new Date().toISOString()
+        topic,
+        visibility,
+        status: 'published',
+        created_at: new Date().toISOString(),
+        author: 'Admin'
       });
 
     if (error) {
@@ -101,12 +104,11 @@ export default function NotesManagement() {
               <Link 
                 to="/admin" 
                 className="flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
-                title="Back to Dashboard"
               >
-                <svg className="w-5 h-5 mr-0 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                <span className="hidden sm:inline">Back to Dashboard</span>
+                Back to Dashboard
               </Link>
               <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
@@ -392,7 +394,7 @@ export default function NotesManagement() {
                       </div>
 
                       <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                        <span>By Admin</span>
+                        <span>By {note.author}</span>
                         <span>{new Date(note.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>

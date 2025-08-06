@@ -2,7 +2,6 @@ import type { ActionFunctionArgs, LoaderFunctionArgs, MetaFunction } from '@remi
 import { json, redirect } from '@remix-run/node';
 import { Form, Link, useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { useState } from 'react';
-import React from 'react';
 
 import { requireAdmin } from '~/lib/session.server';
 import { supabase } from '~/lib/supabase.server';
@@ -31,34 +30,40 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const intent = formData.get('intent');
 
   if (intent === 'create') {
-    const subject = formData.get('subject') as string;
     const title = formData.get('title') as string;
     const description = formData.get('description') as string;
+    const speaker = formData.get('speaker') as string;
+    const speakerBio = formData.get('speakerBio') as string;
     const seminarDate = formData.get('seminarDate') as string;
-
-    // Validate required fields
-    if (!subject || !title || !description || !seminarDate) {
-      return json({ error: 'All fields are required' }, { status: 400 });
-    }
+    const startTime = formData.get('startTime') as string;
+    const endTime = formData.get('endTime') as string;
+    const location = formData.get('location') as string;
+    const capacity = formData.get('capacity') as string;
+    const category = formData.get('category') as string;
+    const registrationRequired = formData.get('registrationRequired') === 'true';
+    const registrationDeadline = formData.get('registrationDeadline') as string;
+    const requirements = formData.get('requirements') as string;
+    const materials = formData.get('materials') as string;
 
     const { error } = await supabase
       .from('seminars')
       .insert({
-        category: 'academic', // Use valid category for database
-        title: `${subject}: ${title}`, // Include subject in title
+        title,
         description,
-        speaker: '', // Empty as not needed
-        speaker_bio: '', // Optional field, can be empty
+        speaker,
+        speaker_bio: speakerBio,
         seminar_date: seminarDate,
-        start_time: '09:00', // Default time
-        end_time: '10:00', // Default time
-        location: '', // Empty as not needed
-        capacity: 50, // Default capacity
-        registration_required: false, // Default
-        registration_deadline: seminarDate, // Same as seminar date
-        requirements: '', // Optional
-        materials: '', // Optional
+        start_time: startTime,
+        end_time: endTime,
+        location,
+        capacity: capacity ? parseInt(capacity) : null,
+        category,
+        registration_required: registrationRequired,
+        registration_deadline: registrationDeadline || null,
+        requirements,
+        materials,
         status: 'scheduled',
+        registered_count: 0,
         created_at: new Date().toISOString()
       });
 
@@ -66,7 +71,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return json({ success: 'Seminar created successfully!' });
+    return redirect('/admin/seminars');
   }
 
   if (intent === 'updateStatus') {
@@ -82,40 +87,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return json({ success: 'Seminar status updated successfully!' });
-  }
-
-  if (intent === 'update') {
-    const seminarId = formData.get('seminarId') as string;
-    const subject = formData.get('subject') as string;
-    const title = formData.get('title') as string;
-    const description = formData.get('description') as string;
-    const seminarDate = formData.get('seminarDate') as string;
-
-    // Validate required fields
-    if (!subject || !title || !description || !seminarDate) {
-      return json({ error: 'All fields are required' }, { status: 400 });
-    }
-
-    const { error } = await supabase
-      .from('seminars')
-      .update({
-        title: `${subject}: ${title}`, // Include subject in title
-        description,
-        speaker: '', // Empty as not needed
-        seminar_date: seminarDate,
-        start_time: '09:00', // Default time
-        end_time: '10:00', // Default time
-        location: '', // Empty as not needed
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', seminarId);
-
-    if (error) {
-      return json({ error: error.message }, { status: 400 });
-    }
-
-    return json({ success: 'Seminar updated successfully!' });
+    return redirect('/admin/seminars');
   }
 
   if (intent === 'delete') {
@@ -130,7 +102,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       return json({ error: error.message }, { status: 400 });
     }
 
-    return json({ success: 'Seminar deleted successfully!' });
+    return redirect('/admin/seminars');
   }
 
   return json({ error: 'Invalid action' }, { status: 400 });
@@ -141,26 +113,8 @@ export default function SeminarManagement() {
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
   const [showForm, setShowForm] = useState(false);
-  const [editingSeminar, setEditingSeminar] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-
-  // Handle success responses
-  React.useEffect(() => {
-    if (navigation.state === 'idle' && actionData && 'success' in actionData) {
-      setShowForm(false);
-      setShowSuccessMessage(true);
-      setTimeout(() => setShowSuccessMessage(false), 3000);
-    }
-  }, [navigation.state, actionData]);
-
-  // Clear success message when opening forms
-  React.useEffect(() => {
-    if (showForm) {
-      setShowSuccessMessage(false);
-    }
-  }, [showForm]);
 
   const isSubmitting = navigation.state === 'submitting';
 
@@ -227,12 +181,11 @@ export default function SeminarManagement() {
               <Link 
                 to="/admin" 
                 className="flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
-                title="Back to Dashboard"
               >
-                <svg className="w-5 h-5 mr-0 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                 </svg>
-                <span className="hidden sm:inline">Back to Dashboard</span>
+                Back to Dashboard
               </Link>
               <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
@@ -254,30 +207,6 @@ export default function SeminarManagement() {
       </header>
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* Success Message */}
-        {showSuccessMessage && actionData && 'success' in actionData && (
-          <div className="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
-            <div className="flex items-center">
-              <svg className="w-5 h-5 text-green-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              <p className="text-green-700 dark:text-green-300 font-medium">{actionData.success}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {actionData && 'error' in actionData && (
-          <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-            <div className="flex items-center">
-              <svg className="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-red-700 dark:text-red-300 font-medium">{actionData.error}</p>
-            </div>
-          </div>
-        )}
-
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-4">
@@ -344,39 +273,12 @@ export default function SeminarManagement() {
         {/* Create Seminar Form */}
         {showForm && (
           <div className="mb-8 bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Create New Seminar</h2>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Schedule New Seminar</h2>
             
             <Form method="post" className="space-y-6">
               <input type="hidden" name="intent" value="create" />
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="subject" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Subject
-                  </label>
-                  <input
-                    type="text"
-                    id="subject"
-                    name="subject"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                    placeholder="Enter subject name..."
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="seminarDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Seminar Date
-                  </label>
-                  <input
-                    type="date"
-                    id="seminarDate"
-                    name="seminarDate"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
-                  />
-                </div>
-
                 <div className="md:col-span-2">
                   <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Seminar Title
@@ -398,10 +300,175 @@ export default function SeminarManagement() {
                   <textarea
                     id="description"
                     name="description"
-                    rows={4}
+                    rows={3}
                     required
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
                     placeholder="Describe the seminar content and objectives..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="speaker" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Speaker Name
+                  </label>
+                  <input
+                    type="text"
+                    id="speaker"
+                    name="speaker"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                    placeholder="Enter speaker name..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="speakerBio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Speaker Bio
+                  </label>
+                  <input
+                    type="text"
+                    id="speakerBio"
+                    name="speakerBio"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                    placeholder="Brief speaker biography..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="seminarDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    id="seminarDate"
+                    name="seminarDate"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="startTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Start Time
+                  </label>
+                  <input
+                    type="time"
+                    id="startTime"
+                    name="startTime"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="endTime" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    End Time
+                  </label>
+                  <input
+                    type="time"
+                    id="endTime"
+                    name="endTime"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    id="location"
+                    name="location"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                    placeholder="Venue or online platform..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="capacity" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Capacity (Optional)
+                  </label>
+                  <input
+                    type="number"
+                    id="capacity"
+                    name="capacity"
+                    min="1"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                    placeholder="Maximum attendees..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Category
+                  </label>
+                  <select
+                    id="category"
+                    name="category"
+                    required
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                  >
+                    <option value="">Select Category</option>
+                    <option value="technical">Technical</option>
+                    <option value="career">Career Development</option>
+                    <option value="research">Research</option>
+                    <option value="industry">Industry Insights</option>
+                    <option value="academic">Academic</option>
+                    <option value="entrepreneurship">Entrepreneurship</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="registrationRequired"
+                    name="registrationRequired"
+                    value="true"
+                    className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="registrationRequired" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                    Registration Required
+                  </label>
+                </div>
+
+                <div>
+                  <label htmlFor="registrationDeadline" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Registration Deadline (Optional)
+                  </label>
+                  <input
+                    type="date"
+                    id="registrationDeadline"
+                    name="registrationDeadline"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="requirements" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Requirements (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    id="requirements"
+                    name="requirements"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                    placeholder="Prerequisites or requirements..."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="materials" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Materials (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    id="materials"
+                    name="materials"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white/50 dark:bg-slate-800/50 text-gray-900 dark:text-white"
+                    placeholder="Required materials or resources..."
                   />
                 </div>
               </div>
@@ -419,10 +486,16 @@ export default function SeminarManagement() {
                   disabled={isSubmitting}
                   className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white rounded-lg hover:from-indigo-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 disabled:opacity-50"
                 >
-                  {isSubmitting ? 'Creating...' : 'Create Seminar'}
+                  {isSubmitting ? 'Scheduling...' : 'Schedule Seminar'}
                 </button>
               </div>
             </Form>
+
+            {actionData?.error && (
+              <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p className="text-red-600 dark:text-red-400">{actionData.error}</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -478,7 +551,7 @@ export default function SeminarManagement() {
             <div className="space-y-4">
               {getFilteredSeminars().map((seminar) => (
                 <div key={seminar.id} className="bg-white/50 dark:bg-slate-700/50 rounded-xl p-6 border border-white/20 hover:shadow-lg transition-shadow">
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between mb-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-3 mb-2">
                         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -487,6 +560,9 @@ export default function SeminarManagement() {
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(seminar.status)}`}>
                           {seminar.status}
                         </span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(seminar.category)}`}>
+                          {seminar.category}
+                        </span>
                       </div>
                       
                       <p className="text-gray-600 dark:text-gray-400 mb-3">{seminar.description}</p>
@@ -494,10 +570,30 @@ export default function SeminarManagement() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center">
                           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                          Speaker: {seminar.speaker}
+                        </div>
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>
-                          Date: {new Date(seminar.seminar_date).toLocaleDateString()}
+                          {formatDateTime(seminar.seminar_date, seminar.start_time)} - {seminar.end_time}
                         </div>
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          </svg>
+                          {seminar.location}
+                        </div>
+                        {seminar.capacity && (
+                          <div className="flex items-center">
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            {seminar.registered_count || 0} / {seminar.capacity} registered
+                          </div>
+                        )}
                       </div>
                     </div>
 
