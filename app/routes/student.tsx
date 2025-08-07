@@ -226,7 +226,7 @@ export default function StudentDashboard() {
                   </button>
                   <div>
                     <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent">
-                      Student Dashboard
+                      
                     </h1>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Focus on career growth</p>
                   </div>
