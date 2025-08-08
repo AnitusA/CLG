@@ -1,326 +1,283 @@
-import type { LoaderFunctionArgs, MetaFunction } from '@remix-run/node';
-import { json } from '@remix-run/node';
-import { Form, Link, useLoaderData } from '@remix-run/react';
+import { json, redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node';
+import { Form, useActionData, useLoaderData, Link } from '@remix-run/react';
 import { useState } from 'react';
+import { authenticateStudent, authenticateAdmin } from '~/lib/auth.server';
+import { createUserSession, getUserId } from '~/lib/session.server';
 
-import { requireAdmin } from '~/lib/session.server';
-import { supabase } from '~/lib/supabase.server';
+export async function loader({ request }: LoaderFunctionArgs) {
+  const userId = await getUserId(request);
+  if (userId) return redirect('/');
+  return json({});
+}
 
-export const meta: MetaFunction = () => [{ title: 'Admin Dashboard - CLG Management System' }];
+export async function action({ request }: ActionFunctionArgs) {
+  const formData = await request.formData();
+  const loginType = formData.get('loginType');
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const user = await requireAdmin(request);
-  
-  // Get statistics from Supabase
-  const { count: studentCount } = await supabase
-    .from('students')
-    .select('*', { count: 'exact', head: true });
+  if (loginType === 'student') {
+    const registerNumber = formData.get('registerNumber');
+    const password = formData.get('password');
 
-  return json({ 
-    user, 
-    studentCount: studentCount || 0,
-    currentDate: new Date().toISOString()
-  });
-};
-
-export default function AdminDashboard() {
-  const { user, studentCount, currentDate } = useLoaderData<typeof loader>();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const adminFeatures = [
-    {
-      name: 'Assignments',
-      description: 'Create and manage student assignments',
-      icon: '📝',
-      href: '/admin/assignments',
-      color: 'from-blue-600 to-blue-800',
-      bgColor: 'bg-blue-50',
-      iconBg: 'bg-blue-500'
-    },
-    {
-      name: 'Record Ending Date',
-      description: 'Set and track important deadlines',
-      icon: '📅',
-      href: '/admin/records',
-      color: 'from-purple-600 to-purple-800',
-      bgColor: 'bg-purple-50',
-      iconBg: 'bg-purple-500'
-    },
-    {
-      name: 'Daily Homework',
-      description: 'Assign and track daily homework',
-      icon: '📚',
-      href: '/admin/homework',
-      color: 'from-green-600 to-green-800',
-      bgColor: 'bg-green-50',
-      iconBg: 'bg-green-500'
-    },
-    {
-      name: 'Daily Updates',
-      description: 'Post daily announcements and updates',
-      icon: '📢',
-      href: '/admin/updates',
-      color: 'from-orange-600 to-orange-800',
-      bgColor: 'bg-orange-50',
-      iconBg: 'bg-orange-500'
-    },
-    {
-      name: 'Notes',
-      description: 'Manage study notes and resources',
-      icon: '📋',
-      href: '/admin/notes',
-      color: 'from-indigo-600 to-indigo-800',
-      bgColor: 'bg-indigo-50',
-      iconBg: 'bg-indigo-500'
-    },
-    {
-      name: 'Test Updates',
-      description: 'Schedule and manage test announcements',
-      icon: '📊',
-      href: '/admin/tests',
-      color: 'from-red-600 to-red-800',
-      bgColor: 'bg-red-50',
-      iconBg: 'bg-red-500'
-    },
-    {
-      name: 'Syllabus',
-      description: 'Update and manage course syllabus',
-      icon: '📖',
-      href: '/admin/syllabus',
-      color: 'from-teal-600 to-teal-800',
-      bgColor: 'bg-teal-50',
-      iconBg: 'bg-teal-500'
-    },
-    {
-      name: 'Birthday Dates',
-      description: 'Track and celebrate student birthdays',
-      icon: '🎉',
-      href: '/admin/birthdays',
-      color: 'from-pink-600 to-pink-800',
-      bgColor: 'bg-pink-50',
-      iconBg: 'bg-pink-500'
-    },
-    {
-      name: 'Seminars',
-      description: 'Organize and schedule seminars',
-      icon: '🎓',
-      href: '/admin/seminars',
-      color: 'from-violet-600 to-violet-800',
-      bgColor: 'bg-violet-50',
-      iconBg: 'bg-violet-500'
+    if (typeof registerNumber !== 'string' || typeof password !== 'string') {
+      return json({ error: 'Invalid form data' }, { status: 400 });
     }
-  ];
+
+    const student = await authenticateStudent(registerNumber, password);
+    if (!student) {
+      return json({ error: 'Invalid register number or password' }, { status: 400 });
+    }
+
+    return createUserSession({
+      request,
+      userId: student.id,
+      userType: 'student',
+      registerNumber: student.registerNumber,
+      remember: false,
+      redirectTo: '/student',
+    });
+  } else if (loginType === 'admin') {
+    const passKey = formData.get('passKey');
+
+    if (typeof passKey !== 'string') {
+      return json({ error: 'Invalid form data' }, { status: 400 });
+    }
+
+    const isValidAdmin = authenticateAdmin(passKey);
+    if (!isValidAdmin) {
+      return json({ error: 'Invalid pass key' }, { status: 400 });
+    }
+
+    return createUserSession({
+      request,
+      userId: 'admin',
+      userType: 'admin',
+      remember: false,
+      redirectTo: '/admin',
+    });
+  }
+
+  return json({ error: 'Invalid login type' }, { status: 400 });
+}
+
+export default function Login() {
+  const actionData = useActionData<typeof action>();
+  const [activeTab, setActiveTab] = useState<'student' | 'admin'>('student');
+  const [showStudentPassword, setShowStudentPassword] = useState(false);
+  const [showAdminPassword, setShowAdminPassword] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex">
-      {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-50 w-64 bg-white/90 backdrop-blur-lg dark:bg-slate-900/90 shadow-xl border-r border-white/20 transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
-        <div className="flex items-center justify-center h-16 px-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">A</span>
-            </div>
-            <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Admin Panel
-            </span>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="mx-auto w-24 h-24 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
+            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
           </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
+          <p className="text-gray-600">Sign in to access your account</p>
         </div>
-        
-        <nav className="mt-5 px-2">
-          <div className="space-y-1">
-            {adminFeatures.map((feature) => (
-              <Link
-                key={feature.name}
-                to={feature.href}
-                className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                <span className="mr-3 text-lg">{feature.icon}</span>
-                <div className="flex-1">
-                  <div className="text-sm font-medium">{feature.name}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {feature.description}
+
+        {/* Login Card */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          {/* Tab Navigation */}
+          <div className="flex bg-gray-50">
+            <button
+              onClick={() => setActiveTab('student')}
+              className={`flex-1 py-4 px-6 text-sm font-medium transition-colors ${
+                activeTab === 'student'
+                  ? 'bg-white text-indigo-600 border-b-2 border-indigo-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>Student</span>
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('admin')}
+              className={`flex-1 py-4 px-6 text-sm font-medium transition-colors ${
+                activeTab === 'admin'
+                  ? 'bg-white text-green-600 border-b-2 border-green-600'
+                  : 'text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <div className="flex items-center justify-center space-x-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span>Admin</span>
+              </div>
+            </button>
+          </div>
+
+          {/* Error Message */}
+          {actionData?.error && (
+            <div className="mx-6 mt-6 p-4 bg-red-50 border-l-4 border-red-400 rounded-r-lg">
+              <div className="flex">
+                <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <p className="text-red-700 text-sm">{actionData.error}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Student Login Form */}
+          {activeTab === 'student' && (
+            <div className="p-6">
+              <Form method="post" className="space-y-6">
+                <input type="hidden" name="loginType" value="student" />
+                
+                <div>
+                  <label htmlFor="registerNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                    Register Number
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V4a2 2 0 114 0v2m-4 0a2 2 0 104 0m-4 0v2m4-2v2" />
+                      </svg>
+                    </div>
+                    <input
+                      id="registerNumber"
+                      name="registerNumber"
+                      type="text"
+                      required
+                      placeholder="Enter your register number"
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    />
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
-        </nav>
 
-        {/* Logout Button in Sidebar */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700">
-          <Form action="/logout" method="post" className="w-full">
-            <button
-              type="submit"
-              className="w-full flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 shadow-lg hover:shadow-xl"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Logout
-            </button>
-          </Form>
-        </div>
-      </div>
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                    </div>
+                    <input
+                      id="password"
+                      name="password"
+                      type={showStudentPassword ? "text" : "password"}
+                      required
+                      placeholder="Enter your password"
+                      className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowStudentPassword(!showStudentPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    >
+                      {showStudentPassword ? (
+                        <svg className="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                        </svg>
+                      ) : (
+                        <svg className="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                </div>
 
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden" aria-hidden="true">
-          <div 
-            className="fixed inset-0 bg-gray-600 bg-opacity-75" 
-            onClick={() => setSidebarOpen(false)}
-          ></div>
-        </div>
-      )}
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-white/80 backdrop-blur-lg dark:bg-slate-900/80 shadow-lg border-b border-white/20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-4">
                 <button
-                  onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500"
+                  type="submit"
+                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 transform hover:scale-105"
                 >
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  
+                  Sign in as Student
+
+                  <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                   </svg>
                 </button>
+              </Form>
+            </div>
+          )}
+
+          {/* Admin Login Form */}
+          {activeTab === 'admin' && (
+            <div className="p-6">
+              <Form method="post" className="space-y-6">
+                <input type="hidden" name="loginType" value="admin" />
+                
                 <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                    Admin Dashboard
-                  </h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">CLG Management System</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-4">
-                <div className="hidden md:flex items-center space-x-3">
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Administrator</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {new Date(currentDate).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-semibold">AD</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-6">
-          {/* Welcome Section */}
-          <div className="mb-8">
-            <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    Welcome back, Administrator! 👋
-                  </h2>
-                  <p className="mt-2 text-gray-600 dark:text-gray-300">
-                    Manage your educational platform with powerful administrative tools
-                  </p>
-                </div>
-                <div className="hidden lg:block">
-                  <div className="flex items-center space-x-8">
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{studentCount}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">Total Students</div>
+                  <label htmlFor="passKey" className="block text-sm font-medium text-gray-700 mb-2">
+                    Admin Pass Key
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                      </svg>
                     </div>
-                    <div className="text-center">
-                      <div className="text-3xl font-bold text-green-600 dark:text-green-400">9</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">Active Modules</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-6">
-              <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-blue-500">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Students</p>
-                  <p className="text-2xl font-semibold text-gray-900 dark:text-white">{studentCount}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-6">
-              <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-green-500">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">System Status</p>
-                  <p className="text-2xl font-semibold text-green-600 dark:text-green-400">Online</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-6">
-              <div className="flex items-center">
-                <div className="p-3 rounded-lg bg-purple-500">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <div className="ml-4">
-                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Features</p>
-                  <p className="text-2xl font-semibold text-gray-900 dark:text-white">9 Modules</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Admin Features Grid */}
-          <div className="mb-8">
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Administrative Modules</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {adminFeatures.map((feature, index) => (
-                <Link
-                  key={feature.name}
-                  to={feature.href}
-                  className="group relative overflow-hidden bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 hover:shadow-2xl transition-all duration-300 hover:scale-105"
-                >
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`w-12 h-12 ${feature.iconBg} rounded-lg flex items-center justify-center text-2xl shadow-lg`}>
-                        {feature.icon}
-                      </div>
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    <input
+                      id="passKey"
+                      name="passKey"
+                      type={showAdminPassword ? "text" : "password"}
+                      required
+                      placeholder="Enter admin pass key"
+                      className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowAdminPassword(!showAdminPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    >
+                      {showAdminPassword ? (
+                        <svg className="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
                         </svg>
-                      </div>
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                      {feature.name}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {feature.description}
-                    </p>
+                      ) : (
+                        <svg className="h-5 w-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      )}
+                    </button>
                   </div>
-                  <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${feature.color} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300`}></div>
-                </Link>
-              ))}
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 transform hover:scale-105"
+                >
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  Sign in as Admin
+                </button>
+              </Form>
+
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <p className="text-xs text-gray-600 text-center">
+                  <svg className="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  Admin access required for system management
+                </p>
+              </div>
             </div>
-          </div>
-        </main>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-8">
+          <p className="text-sm text-gray-500">
+            Secure login powered by modern authentication
+          </p>
+        </div>
       </div>
     </div>
   );
