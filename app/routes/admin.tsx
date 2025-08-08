@@ -36,7 +36,7 @@ export default function AdminDashboard() {
     {
       name: 'Assignments',
       description: 'Assignment topic, subject, due date, description',
-      icon: '�',
+      icon: '📝 ',
       href: '/admin/assignments',
       color: 'from-blue-600 to-blue-800',
       bgColor: 'bg-blue-50',
@@ -54,7 +54,7 @@ export default function AdminDashboard() {
     {
       name: 'Record',
       description: 'Subject, date and description for records',
-      icon: '�',
+      icon: '📋',
       href: '/admin/record',
       color: 'from-purple-600 to-purple-800',
       bgColor: 'bg-purple-50',
