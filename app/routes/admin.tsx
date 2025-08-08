@@ -191,9 +191,9 @@ export default function AdminDashboard() {
                 </button>
                 <div>
                   <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                    Admin Dashboard
+                    Dashboard
                   </h1>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">CLG Management System</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">CSE-B Admin</p>
                 </div>
               </div>
               
