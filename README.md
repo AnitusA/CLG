@@ -4,16 +4,17 @@ A comprehensive admin dashboard for College management built with Remix, TypeScr
 
 ## Features
 
-- **Admin Dashboard** with 9 management modules:
+- **Admin Dashboard** 
+**STUDENT dsshboard**
   - Assignments Management
-  - Deadlines & Record Ending Dates
-  - Daily Homework Tracking
-  - Daily Updates & Announcements
-  - Notes & Study Materials
-  - Test Scheduling & Updates
-  - Syllabus Management
-  - Birthday Tracking
+  - Record
+  - Daily Homework
+  - Events
+  - Test Scheduling
   - Seminars & Events
+
+  - Calender view 
+   that show all works has a end date so that will give a clear idea or shedule for preparing those upcoming works 
 
 - **Authentication System** for students and administrators
 - **Professional UI** with glassmorphism design and premium styling

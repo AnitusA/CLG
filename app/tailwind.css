@@ -687,6 +687,18 @@ body {
     );
   position: relative;
   overflow: hidden;
+  
+  /* Mobile optimization - ensure content is always visible */
+  @media (max-width: 768px) {
+    /* Reduce background intensity on mobile and fix height */
+    background: 
+      radial-gradient(ellipse at center, #1e3a8a 0%, #0f172a 100%);
+    min-height: 100vh !important;
+    height: 100vh !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
 }
 
 /* Enhanced Dense Stars Field */
@@ -725,6 +737,13 @@ body {
   background-repeat: repeat;
   background-size: 320px 160px;
   animation: stars-gentle-twinkle 12s ease-in-out infinite;
+  
+  /* Mobile optimization - reduce stars density */
+  @media (max-width: 768px) {
+    background-size: 160px 80px;
+    opacity: 0.4;
+    z-index: 1;
+  }
 }
 
 /* Galaxy Background */
@@ -743,6 +762,15 @@ body {
   border-radius: 50%;
   filter: blur(1px);
   animation: galaxy-rotation 60s linear infinite;
+  
+  /* Mobile optimization - hide or reduce on small screens */
+  @media (max-width: 768px) {
+    width: 80px;
+    height: 50px;
+    opacity: 0.3;
+    top: 5%;
+    right: 10%;
+  }
 }
 
 .space-galaxy-2 {
@@ -760,6 +788,15 @@ body {
   border-radius: 50%;
   filter: blur(0.8px);
   animation: galaxy-rotation 80s linear infinite reverse;
+  
+  /* Mobile optimization */
+  @media (max-width: 768px) {
+    width: 60px;
+    height: 30px;
+    opacity: 0.3;
+    bottom: 15%;
+    left: 5%;
+  }
 }
 
 /* Space Shuttle */
@@ -774,6 +811,11 @@ body {
   border-radius: 0 10px 10px 0;
   animation: shuttle-drift 25s ease-in-out infinite;
   z-index: 10;
+  
+  /* Mobile optimization - hide on small screens */
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 .space-shuttle::before {
@@ -810,6 +852,11 @@ body {
   background: linear-gradient(45deg, #9ca3af, #6b7280);
   border-radius: 2px;
   animation: satellite-orbit-1 20s linear infinite;
+  
+  /* Mobile optimization - hide on small screens */
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 .satellite-1::before {
@@ -843,6 +890,11 @@ body {
   background: linear-gradient(45deg, #94a3b8, #64748b);
   border-radius: 2px;
   animation: satellite-orbit-2 30s linear infinite;
+  
+  /* Mobile optimization - hide on small screens */
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 .satellite-2::before {
@@ -878,6 +930,11 @@ body {
     radial-gradient(circle at 50% 30%, #f8fafc 0%, #e2e8f0 100%);
   border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
   animation: astronaut-float 15s ease-in-out infinite;
+  
+  /* Mobile optimization - hide on small screens */
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 .space-astronaut::before {
@@ -910,6 +967,11 @@ body {
   position: absolute;
   width: 100%;
   height: 100%;
+  
+  /* Mobile optimization - reduce visibility */
+  @media (max-width: 768px) {
+    opacity: 0.5;
+  }
 }
 
 .shooting-star {
@@ -956,6 +1018,11 @@ body {
     radial-gradient(ellipse at 50% 80%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
     radial-gradient(ellipse at 10% 70%, rgba(168, 85, 247, 0.05) 0%, transparent 55%);
   animation: nebula-drift 30s ease-in-out infinite;
+  
+  /* Mobile optimization - reduce opacity */
+  @media (max-width: 768px) {
+    opacity: 0.3;
+  }
 }
 
 /* More Realistic Planets */
@@ -973,6 +1040,15 @@ body {
     0 0 20px rgba(251, 191, 36, 0.2),
     inset -8px -8px 15px rgba(0, 0, 0, 0.4);
   animation: planet-slow-orbit-1 40s linear infinite;
+  
+  /* Mobile optimization - reduce size and opacity */
+  @media (max-width: 768px) {
+    width: 25px;
+    height: 25px;
+    opacity: 0.4;
+    top: 8%;
+    right: 5%;
+  }
 }
 
 .space-planet-2 {
@@ -989,6 +1065,15 @@ body {
     0 0 15px rgba(59, 130, 246, 0.3),
     inset -6px -6px 12px rgba(0, 0, 0, 0.5);
   animation: planet-slow-orbit-2 50s linear infinite;
+  
+  /* Mobile optimization - reduce size and opacity */
+  @media (max-width: 768px) {
+    width: 20px;
+    height: 20px;
+    opacity: 0.4;
+    bottom: 12%;
+    left: 5%;
+  }
 }
 
 .space-planet-3 {
@@ -1005,6 +1090,11 @@ body {
     0 0 12px rgba(239, 68, 68, 0.2),
     inset -4px -4px 8px rgba(0, 0, 0, 0.4);
   animation: planet-slow-orbit-3 35s linear infinite;
+  
+  /* Mobile optimization - hide on small screens */
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 /* Loading Effects */
@@ -1067,6 +1157,11 @@ body {
   right: 18%;
   box-shadow: 0 0 15px rgba(255, 255, 255, 0.9);
   animation: satellite-orbit 12s linear infinite;
+  
+  /* Mobile optimization - hide on small screens */
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 /* Keyframes for Space Animations */
@@ -1711,6 +1806,335 @@ body {
     padding: 0.5rem 0.75rem;
     font-size: 0.75rem;
   }
+  
+  /* Mobile Login Page Improvements */
+  .min-h-screen {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+  
+  /* Fix mobile login container spacing */
+  .mobile-login-container {
+    padding: 1rem;
+    margin: 0;
+    max-width: 100%;
+  }
+  
+  /* Prevent horizontal overflow on mobile */
+  .mobile-login-card {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-radius: 1rem !important;
+  }
+  
+  /* Improve mobile text readability */
+  .mobile-login-text {
+    line-height: 1.4 !important;
+    word-wrap: break-word !important;
+  }
+  
+  /* Fix mobile button sizing */
+  .mobile-login-button {
+    min-height: 60px !important;
+    touch-action: manipulation;
+  }
+  
+  /* Mobile login form improvements */
+  .mobile-login-input {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+    -webkit-appearance: none;
+    appearance: none;
+    -webkit-border-radius: 0;
+    border-radius: 0;
+  }
+  
+  /* Mobile button content alignment fixes */
+  @media (max-width: 768px) {
+    /* Mobile login container - proper spacing and layout */
+    .mobile-login-container {
+      min-height: 100vh !important;
+      height: 100vh !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: flex-start !important;
+      align-items: center !important;
+      padding: 16px !important;
+      box-sizing: border-box !important;
+      position: relative !important;
+    }
+    
+    .mobile-content-container {
+      width: 100% !important;
+      max-width: 400px !important;
+      margin-top: 20px !important;
+      margin-bottom: 20px !important;
+      flex: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      min-height: 0 !important;
+      padding: 0 16px !important;
+    }
+    
+    /* Mobile header optimizations */
+    .mobile-header {
+      margin-bottom: 24px !important;
+    }
+    
+    .mobile-logo {
+      width: 60px !important;
+      height: 60px !important;
+      margin-bottom: 16px !important;
+    }
+    
+    .mobile-logo svg {
+      width: 30px !important;
+      height: 30px !important;
+    }
+    
+    .mobile-header h1 {
+      font-size: 28px !important;
+      line-height: 1.2 !important;
+      margin-bottom: 12px !important;
+    }
+    
+    .mobile-header p {
+      font-size: 16px !important;
+      line-height: 1.4 !important;
+      padding: 0 16px !important;
+    }
+    
+    /* Mobile form titles */
+    .mobile-title {
+      font-size: 32px !important;
+      line-height: 1.2 !important;
+      margin-bottom: 12px !important;
+    }
+    
+    .mobile-subtitle {
+      font-size: 16px !important;
+      line-height: 1.4 !important;
+      padding: 0 16px !important;
+    }
+    
+    /* Mobile login options */
+    .mobile-login-options {
+      margin-top: 32px !important;
+      margin-bottom: 24px !important;
+    }
+    
+    .mobile-login-options > * {
+      margin-bottom: 16px !important;
+    }
+    
+    .mobile-login-options > *:last-child {
+      margin-bottom: 0 !important;
+    }
+    
+    /* Mobile footer */
+    .mobile-footer {
+      margin-top: 24px !important;
+      margin-bottom: 16px !important;
+    }
+    
+    .mobile-footer p {
+      font-size: 12px !important;
+      padding: 0 24px !important;
+    }
+    
+    /* Mobile login form specific optimizations */
+    .mobile-login-form {
+      padding: 16px !important;
+      margin: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    
+    .mobile-login-form .mb-6 {
+      margin-bottom: 12px !important;
+    }
+    
+    .mobile-login-form .mb-8 {
+      margin-bottom: 16px !important;
+    }
+    
+    .mobile-login-form .space-y-8 > * + * {
+      margin-top: 12px !important;
+    }
+    
+    .mobile-login-form .space-y-6 > * + * {
+      margin-top: 12px !important;
+    }
+    
+    /* Mobile form inputs */
+    .mobile-login-form input {
+      padding: 12px 16px !important;
+      font-size: 16px !important;
+    }
+    
+    .mobile-login-form button {
+      padding: 14px 20px !important;
+      font-size: 16px !important;
+      min-height: 48px !important;
+    }
+    
+    /* Mobile login card optimizations */
+    .mobile-login-card {
+      padding: 16px !important;
+      margin: 8px 0 !important;
+      border-radius: 12px !important;
+    }
+    
+    .mobile-login-header {
+      text-align: center !important;
+      margin-bottom: 16px !important;
+    }
+    
+    .mobile-login-header h2 {
+      font-size: 24px !important;
+      line-height: 1.3 !important;
+      margin-bottom: 8px !important;
+    }
+    
+    .mobile-login-header p {
+      font-size: 14px !important;
+      line-height: 1.4 !important;
+    }
+    
+    .login-card-button {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      padding: 16px !important;
+    }
+    
+    .login-card-icon {
+      width: 48px !important;
+      height: 48px !important;
+      flex-shrink: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    
+    .login-card-content {
+      flex: 1 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: center !important;
+      margin-left: 16px !important;
+      margin-right: 16px !important;
+    }
+    
+    .login-card-arrow {
+      width: 24px !important;
+      height: 24px !important;
+      flex-shrink: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    
+    .login-card-title {
+      font-size: 18px !important;
+      line-height: 1.3 !important;
+      margin-bottom: 4px !important;
+    }
+    
+    .login-card-description {
+      font-size: 14px !important;
+      line-height: 1.4 !important;
+    }
+    
+    /* Mobile form button fixes */
+    .mobile-submit-button {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 16px 24px !important;
+      font-size: 16px !important;
+      min-height: 48px !important;
+      white-space: nowrap !important;
+    }
+    
+    .mobile-submit-button svg {
+      margin-right: 8px !important;
+      flex-shrink: 0 !important;
+      width: 20px !important;
+      height: 20px !important;
+    }
+    
+    /* Mobile back button fixes */
+    .mobile-back-button {
+      display: flex !important;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      padding: 8px !important;
+      font-size: 14px !important;
+      white-space: nowrap !important;
+    }
+    
+    .mobile-back-button svg {
+      margin-right: 8px !important;
+      flex-shrink: 0 !important;
+      width: 16px !important;
+      height: 16px !important;
+    }
+  }
+  
+  /* Additional mobile password toggle button */
+  .mobile-password-toggle {
+    min-width: 48px !important;
+    min-height: 48px !important;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    position: absolute !important;
+    right: 2px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 20 !important;
+  }
+  
+  /* Fix password input padding on mobile */
+  .mobile-password-input {
+    padding-right: 50px !important;
+  }
+  
+  /* Ensure button stays on right side */
+  @supports (-webkit-touch-callout: none) {
+    .mobile-password-toggle {
+      right: 2px !important;
+      position: absolute !important;
+    }
+  }
+  
+  /* Additional mobile fixes for password toggle */
+  @media (max-width: 768px) {
+    .password-toggle-mobile {
+      position: absolute !important;
+      right: 4px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      width: 44px !important;
+      height: 32px !important;
+      z-index: 30 !important;
+    }
+    
+    .password-input-mobile {
+      padding-right: 52px !important;
+    }
+  }
+  
+  /* Mobile form focus improvements */
+  .mobile-input-focus:focus {
+    transform: none !important; /* Disable scale on mobile for better UX */
+  }
+  
+  /* Prevent text from being too small */
+  input[type="text"],
+  input[type="password"] {
+    font-size: 16px !important;
+  }
 }
 
 /* Portrait orientation specific fixes */
@@ -1745,5 +2169,35 @@ body {
   .landscape-header {
     min-height: 50px;
     padding: 0.5rem 1rem;
+  }
+}
+
+/* Desktop password toggle styles - override mobile styles on larger screens */
+@media (min-width: 769px) {
+  .password-toggle-mobile {
+    position: absolute !important;
+    right: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 40px !important;
+    height: 40px !important;
+    z-index: 10 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  .password-input-mobile {
+    padding-right: 56px !important;
+  }
+  
+  /* Ensure proper spacing and alignment on desktop */
+  .mobile-login-input {
+    padding-left: 3rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  .mobile-login-input.password-input-mobile {
+    padding-right: 56px !important;
   }
 }

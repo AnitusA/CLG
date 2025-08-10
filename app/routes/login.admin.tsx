@@ -41,7 +41,7 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-screen oxford-blue-space flex items-center justify-center p-4 animate-fade-in relative overflow-hidden">
+    <div className="min-h-screen oxford-blue-space flex items-center justify-center p-4 animate-fade-in relative overflow-hidden mobile-login-container">
       {/* Stars Field */}
       <div className="stars-field"></div>
       
@@ -63,12 +63,12 @@ export default function AdminLogin() {
       {/* Satellite */}
       <div className="space-satellite"></div>
       
-      <div className="w-full max-w-md animate-slide-in-up relative z-10">
+      <div className="w-full max-w-md animate-slide-in-up relative z-10 mobile-content-container">
         {/* Back Button */}
         <div className="mb-6">
           <Link
             to="/login"
-            className="inline-flex items-center space-x-2 text-blue-200 hover:text-white transition-colors duration-300 hover:translate-x-1"
+            className="inline-flex items-center space-x-2 text-blue-200 hover:text-white transition-colors duration-300 hover:translate-x-1 mobile-back-button"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -78,8 +78,8 @@ export default function AdminLogin() {
         </div>
 
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="mx-auto w-24 h-24 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full flex items-center justify-center mb-4 shadow-2xl hover:glow-intense-green animate-pulse-slow relative overflow-hidden group">
+        <div className="text-center mb-8 mobile-login-header">
+          <div className="mx-auto w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full flex items-center justify-center mb-4 shadow-2xl hover:glow-intense-green animate-pulse-slow relative overflow-hidden group mobile-logo">
             {/* Header sparkles */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               <div className="absolute top-2 left-3 w-0.5 h-0.5 bg-white rounded-full animate-twinkle"></div>
@@ -90,19 +90,19 @@ export default function AdminLogin() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
-          <h1 className="text-4xl font-bold text-white mb-3" style={{
+          <h1 className="text-4xl font-bold text-white mb-3 mobile-title" style={{
             textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
             filter: 'brightness(1.0)',
             fontWeight: '700'
           }}>Admin Login</h1>
-          <p className="text-blue-100 text-lg font-medium" style={{
+          <p className="text-blue-100 text-lg font-medium mobile-subtitle" style={{
             textShadow: '1px 1px 2px rgba(0,0,0,0.6)',
             filter: 'brightness(1.0)'
           }}>Enter your admin pass key to access the dashboard</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden border border-emerald-400/20 hover:glow-intense-green relative">
+        <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden border border-emerald-400/20 hover:glow-intense-green relative mobile-login-card">
           {/* Card sparkles */}
           <div className="absolute inset-0 opacity-0 hover:opacity-30 transition-opacity duration-500">
             <div className="absolute top-4 left-6 w-0.5 h-0.5 bg-emerald-300 rounded-full animate-twinkle"></div>
@@ -151,19 +151,21 @@ export default function AdminLogin() {
                     type={showPassword ? "text" : "password"}
                     required
                     placeholder="Enter admin pass key"
-                    className="block w-full pl-10 pr-12 py-3 border border-emerald-400/20 rounded-lg bg-white/5 backdrop-blur-sm text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 hover:bg-white/10"
+                    className="block w-full pl-10 py-3 border border-emerald-400/20 rounded-lg bg-white/5 backdrop-blur-sm text-white placeholder-blue-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-300 hover:bg-white/10 mobile-login-input password-input-mobile"
+                    style={{ fontSize: '16px' }}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="password-toggle-mobile touch-manipulation hover:bg-emerald-600/20 rounded-r-lg transition-all duration-200 text-emerald-400 hover:text-emerald-300 flex items-center justify-center"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
-                      <svg className="h-5 w-5 text-emerald-400 hover:text-emerald-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 hover:text-emerald-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
                       </svg>
                     ) : (
-                      <svg className="h-5 w-5 text-emerald-400 hover:text-emerald-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 hover:text-emerald-300 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
@@ -174,7 +176,7 @@ export default function AdminLogin() {
 
               <button
                 type="submit"
-                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-2xl text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300 transform hover:scale-105 hover:glow-intense-green animate-shimmer"
+                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-lg shadow-2xl text-sm font-medium text-white bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all duration-300 transform hover:scale-105 hover:glow-intense-green animate-shimmer mobile-submit-button"
               >
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />

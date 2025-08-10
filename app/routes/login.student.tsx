@@ -63,7 +63,7 @@ export default function StudentLogin() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-screen oxford-blue-space flex items-center justify-center p-4 animate-fade-in relative overflow-hidden">
+    <div className="min-h-screen oxford-blue-space flex items-center justify-center p-4 animate-fade-in relative overflow-hidden mobile-login-container">
       {/* Stars Field */}
       <div className="stars-field"></div>
       
@@ -85,12 +85,12 @@ export default function StudentLogin() {
       {/* Satellite */}
       <div className="space-satellite"></div>
       
-      <div className="w-full max-w-md animate-slide-in-up relative z-10">
+      <div className="w-full max-w-md animate-slide-in-up relative z-10 mobile-content-container">
         {/* Back Button */}
         <div className="mb-6">
           <Link
             to="/login"
-            className="inline-flex items-center space-x-2 text-blue-200 hover:text-white transition-all duration-300 group transform hover:scale-105"
+            className="inline-flex items-center space-x-2 text-blue-200 hover:text-white transition-all duration-300 group transform hover:scale-105 mobile-back-button"
           >
             <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -100,8 +100,8 @@ export default function StudentLogin() {
         </div>
 
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="mx-auto w-28 h-28 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-6 shadow-2xl relative overflow-hidden group hover:glow-intense-blue animate-bounce-slow">
+        <div className="text-center mb-8 mobile-login-header">
+          <div className="mx-auto w-20 h-20 sm:w-28 sm:h-28 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-4 sm:mb-6 shadow-2xl relative overflow-hidden group hover:glow-intense-blue animate-bounce-slow mobile-logo">
             {/* Header sparkles */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               <div className="absolute top-2 left-4 w-1 h-1 bg-white rounded-full animate-twinkle"></div>
@@ -113,19 +113,19 @@ export default function StudentLogin() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
-          <h1 className="text-5xl font-bold text-white mb-4" style={{
+          <h1 className="text-5xl font-bold text-white mb-4 mobile-title" style={{
             textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
             filter: 'brightness(1.0)',
             fontWeight: '700'
           }}>Welcome Back</h1>
-          <p className="text-xl text-blue-100 font-medium" style={{
+          <p className="text-xl text-blue-100 font-medium mobile-subtitle" style={{
             textShadow: '1px 1px 2px rgba(0,0,0,0.6)',
             filter: 'brightness(1.0)'
           }}>Sign in to access your account</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-blue-800/30 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-blue-500/30 relative group hover:shadow-blue-400/40 transition-all duration-500 hover:glow-intense-blue animate-shimmer transform hover:scale-102">
+        <div className="bg-blue-800/30 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-blue-500/30 relative group hover:shadow-blue-400/40 transition-all duration-500 hover:glow-intense-blue animate-shimmer transform hover:scale-102 mobile-login-card">
           {/* Card sparkles */}
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
             <div className="absolute top-8 left-8 w-1 h-1 bg-blue-400 rounded-full animate-twinkle"></div>
@@ -188,7 +188,8 @@ export default function StudentLogin() {
                     type="text"
                     required
                     placeholder="Enter your register number"
-                    className="block w-full pl-12 pr-4 py-4 border-2 border-blue-500/30 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 bg-blue-900/30 focus:bg-blue-800/50 hover:border-blue-400/50 text-lg placeholder-blue-300 text-white backdrop-blur-sm transform focus:scale-105"
+                    className="block w-full pl-12 pr-4 py-4 border-2 border-blue-500/30 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 bg-blue-900/30 focus:bg-blue-800/50 hover:border-blue-400/50 text-lg placeholder-blue-300 text-white backdrop-blur-sm md:transform md:focus:scale-105 mobile-login-input"
+                    style={{ fontSize: '16px' }}
                   />
                 </div>
               </div>
@@ -209,21 +210,23 @@ export default function StudentLogin() {
                     type={showPassword ? "text" : "password"}
                     required
                     placeholder="Enter your password"
-                    className="block w-full pl-12 pr-14 py-4 border-2 border-blue-500/30 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 bg-blue-900/30 focus:bg-blue-800/50 hover:border-blue-400/50 text-lg placeholder-blue-300 text-white backdrop-blur-sm transform focus:scale-105"
+                    className="block w-full pl-12 py-4 border-2 border-blue-500/30 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 bg-blue-900/30 focus:bg-blue-800/50 hover:border-blue-400/50 text-lg placeholder-blue-300 text-white backdrop-blur-sm md:transform md:focus:scale-105 mobile-login-input password-input-mobile"
+                    style={{ fontSize: '16px' }}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center hover:bg-blue-600/30 rounded-r-2xl transition-all duration-200 transform hover:scale-110"
+                    className="password-toggle-mobile hover:bg-blue-600/30 rounded-r-2xl transition-all duration-200 touch-manipulation text-blue-400 hover:text-blue-300 flex items-center justify-center"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
-                      <svg className="h-5 w-5 text-blue-400 hover:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400 hover:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
                       </svg>
                     ) : (
-                      <svg className="h-5 w-5 text-blue-400 hover:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400 hover:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.543 7-1.275 4.057-5.065 7-9.543 7-4.477 0-8.268-2.943-9.542-7z" />
                       </svg>
                     )}
                   </button>
@@ -232,7 +235,7 @@ export default function StudentLogin() {
 
               <button
                 type="submit"
-                className="w-full flex justify-center items-center py-4 px-6 border border-transparent rounded-2xl shadow-lg text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105 hover:shadow-xl relative overflow-hidden group hover:glow-intense-blue animate-pulse-slow active:scale-95"
+                className="w-full flex justify-center items-center py-4 px-6 border border-transparent rounded-2xl shadow-lg text-lg font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105 hover:shadow-xl relative overflow-hidden group hover:glow-intense-blue animate-pulse-slow active:scale-95 mobile-submit-button"
               >
                 {/* Button sparkles */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
