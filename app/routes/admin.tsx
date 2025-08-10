@@ -163,8 +163,20 @@ export default function AdminDashboard() {
         
         <div className="flex items-center h-16 px-4 border-b border-slate-600/70 bg-gradient-to-r from-blue-800/20 to-slate-700/20 relative z-10 mobile-header mobile-sidebar-header">
           <div className="flex items-center space-x-3 mobile-flex-center">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-xl flex items-center justify-center flex-shrink-0 shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-110 animate-pulse mobile-icon-lg mobile-no-scale border border-blue-400/30">
-              <span className="text-white font-bold text-lg drop-shadow-sm">A</span>
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 rounded-xl flex items-center justify-center flex-shrink-0 shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-110 animate-pulse mobile-icon-lg mobile-no-scale border border-blue-400/30 p-1">
+              <img 
+                src="/logo-light.png" 
+                alt="CLG Management Logo" 
+                className="w-full h-full object-contain filter brightness-0 invert"
+                onError={(e) => {
+                  // Fallback to text if image fails to load
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'block';
+                }}
+              />
+              <span className="text-white font-bold text-lg drop-shadow-sm hidden">A</span>
             </div>
             {sidebarExpanded && (
               <div className="flex flex-col">
@@ -190,7 +202,7 @@ export default function AdminDashboard() {
                   key={feature.name}
                   to={feature.href}
                   onClick={() => setSidebarOpen(false)} // Close sidebar on mobile when item is clicked
-                  className={`group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg relative overflow-hidden mobile-nav-item mobile-touch-target mobile-no-scale animate-slide-in-left ${!sidebarExpanded ? 'justify-center w-12 h-12 mx-auto' : 'w-full'} ${
+                  className={`group flex items-center px-3 py-3 text-sm font-medium rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg relative overflow-hidden mobile-nav-item mobile-touch-target mobile-no-scale mobile-nav-spacing animate-slide-in-left ${!sidebarExpanded ? 'justify-center w-12 h-12 mx-auto' : 'w-full'} ${
                     isActive 
                       ? `bg-gradient-to-r ${colors.gradient} text-white shadow-lg shadow-${colors.icon.replace('bg-', '')}-500/30` 
                       : `text-slate-200 hover:bg-gradient-to-r ${colors.hover} hover:text-white`
@@ -311,8 +323,10 @@ export default function AdminDashboard() {
                       {new Date(currentDate).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mobile-icon-lg shadow-lg">
-                    <span className="text-white text-sm font-semibold">AD</span>
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mobile-icon-lg shadow-lg p-1">
+                    <svg className="w-full h-full text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
                   </div>
                 </div>
               </div>
@@ -332,8 +346,8 @@ export default function AdminDashboard() {
           ) : (
             <div className="relative z-10 mobile-container-fix">
               {/* Welcome Section */}
-              <div className="mb-8 animate-fade-in mobile-welcome mobile-container-fix">
-                <div className="bg-white/70 backdrop-blur-xl dark:bg-slate-800/70 rounded-3xl shadow-2xl border border-white/30 p-8 relative overflow-hidden group hover:shadow-blue-500/10 transition-all duration-500 transform hover:scale-[1.01] mobile-backdrop-blur xs-mobile-padding mobile-shadow-md mobile-rounded mobile-no-scale">
+              <div className="mb-8 animate-fade-in mobile-welcome mobile-container-fix mobile-admin-section">
+                <div className="bg-white/70 backdrop-blur-xl dark:bg-slate-800/70 rounded-3xl shadow-2xl border border-white/30 p-8 relative overflow-hidden group hover:shadow-blue-500/10 transition-all duration-500 transform hover:scale-[1.01] mobile-backdrop-blur xs-mobile-padding mobile-shadow-md mobile-rounded mobile-no-scale mobile-card-spacing">
                   {/* Subtle sparkling overlay */}
                   <div className="absolute inset-0 opacity-0 group-hover:opacity-50 transition-opacity duration-700 mobile-bg-fix">
                     <div className="absolute top-8 right-16 w-0.5 h-0.5 bg-blue-300/60 rounded-full animate-twinkle"></div>
@@ -344,7 +358,7 @@ export default function AdminDashboard() {
                   {/* Subtle card glow effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-500/3 to-purple-500/3 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
                   
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between relative z-10 space-y-4 lg:space-y-0 mobile-flex-col mobile-space-y-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between relative z-10 space-y-4 lg:space-y-0 mobile-flex-col mobile-space-y-4 mobile-flex-spacing">
                     <div className="animate-slide-in-left mobile-container-fix">
                       <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white animate-gradient-text mobile-text-2xl">
                         Welcome back, Administrator! 👋
@@ -355,13 +369,13 @@ export default function AdminDashboard() {
                     </div>
                     
                     {/* Mobile Stats */}
-                    <div className="lg:hidden grid grid-cols-2 gap-4 animate-slide-in-up mobile-grid-2 mobile-container-fix">
-                      <div className="text-center bg-blue-500/10 rounded-lg p-3 xs-mobile-padding mobile-rounded">
-                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mobile-text-xl">{studentCount}</div>
+                    <div className="lg:hidden grid grid-cols-2 gap-4 animate-slide-in-up mobile-admin-grid">
+                      <div className="text-center bg-blue-500/10 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200/30">
+                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">{studentCount}</div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">Total Students</div>
                       </div>
-                      <div className="text-center bg-green-500/10 rounded-lg p-3 xs-mobile-padding mobile-rounded">
-                        <div className="text-2xl font-bold text-green-600 dark:text-green-400 mobile-text-xl">9</div>
+                      <div className="text-center bg-green-500/10 dark:bg-green-900/20 rounded-xl p-4 border border-green-200/30">
+                        <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">9</div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">Active Modules</div>
                       </div>
                     </div>
@@ -369,12 +383,12 @@ export default function AdminDashboard() {
                     {/* Desktop Stats */}
                     <div className="hidden lg:block animate-slide-in-right">
                       <div className="flex items-center space-x-8">
-                        <div className="text-center">
-                          <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{studentCount}</div>
+                        <div className="text-center bg-blue-500/10 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200/30">
+                          <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">{studentCount}</div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">Total Students</div>
                         </div>
-                        <div className="text-center">
-                          <div className="text-3xl font-bold text-green-600 dark:text-green-400">9</div>
+                        <div className="text-center bg-green-500/10 dark:bg-green-900/20 rounded-xl p-4 border border-green-200/30">
+                          <div className="text-3xl font-bold text-green-600 dark:text-green-400 mb-1">9</div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">Active Modules</div>
                         </div>
                       </div>
@@ -384,91 +398,64 @@ export default function AdminDashboard() {
               </div>
 
               {/* Quick Stats */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8 mobile-grid mobile-stats mobile-container-fix">
-                <div className="bg-white/70 backdrop-blur-xl dark:bg-slate-800/70 rounded-2xl shadow-2xl border border-white/30 p-4 md:p-6 relative group hover-glow-blue transform hover:scale-105 transition-all duration-500 animate-fade-in sparkles mobile-backdrop-blur mobile-feature-card xs-mobile-padding mobile-shadow mobile-rounded mobile-no-scale" style={{animationDelay: '0.2s'}}>
-                  {/* Card glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl glow-intense-blue"></div>
-                  
-                  {/* Sparkling overlay */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 mobile-bg-fix">
-                    <div className="absolute top-2 right-2 w-2 h-2 bg-blue-400 rounded-full animate-twinkle"></div>
-                    <div className="absolute top-4 left-4 w-1 h-1 bg-cyan-300 rounded-full animate-sparkle" style={{animationDelay: '0.5s'}}></div>
-                    <div className="absolute bottom-3 right-6 w-1.5 h-1.5 bg-blue-300 rounded-full animate-twinkle" style={{animationDelay: '1s'}}></div>
-                  </div>
-                  
-                  <div className="flex items-center relative z-10">
-                    <div className="p-2 md:p-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg group-hover:shadow-blue-500/50 transform group-hover:scale-110 transition-all duration-300 animate-pulse-slow group-hover:animate-neon-pulse mobile-icon-lg">
-                      <svg className="w-5 h-5 md:w-6 md:h-6 text-white mobile-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 mobile-admin-section">
+                {/* Active Students Card */}
+                <div className="bg-white/80 backdrop-blur-xl dark:bg-slate-800/80 rounded-2xl shadow-xl border border-blue-200/30 p-6 relative group hover:shadow-blue-500/20 transition-all duration-300 mobile-card-spacing">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                       </svg>
                     </div>
-                    <div className="ml-3 md:ml-4 min-w-0 flex-1">
-                      <p className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 truncate xs-mobile-text mobile-overflow-fix">Active Students</p>
-                      <p className="text-xl md:text-3xl font-bold text-gray-900 dark:text-white animate-pulse group-hover:animate-neon-pulse mobile-text-xl">{studentCount}</p>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Active Students</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">{studentCount}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white/70 backdrop-blur-xl dark:bg-slate-800/70 rounded-2xl shadow-2xl border border-white/30 p-4 md:p-6 relative group hover-glow-green transform hover:scale-105 transition-all duration-500 animate-fade-in sparkles" style={{animationDelay: '0.4s'}}>
-                  {/* Card glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl glow-intense-green"></div>
-                  
-                  {/* Sparkling overlay */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute top-3 right-3 w-2 h-2 bg-green-400 rounded-full animate-twinkle" style={{animationDelay: '0.3s'}}></div>
-                    <div className="absolute top-6 left-3 w-1 h-1 bg-emerald-300 rounded-full animate-sparkle" style={{animationDelay: '0.8s'}}></div>
-                    <div className="absolute bottom-4 right-8 w-1.5 h-1.5 bg-green-300 rounded-full animate-twinkle" style={{animationDelay: '1.2s'}}></div>
-                  </div>
-                  
-                  <div className="flex items-center relative z-10">
-                    <div className="p-2 md:p-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 shadow-lg group-hover:shadow-green-500/50 transform group-hover:scale-110 transition-all duration-300 animate-pulse-slow group-hover:animate-neon-pulse" style={{animationDelay: '0.5s'}}>
-                      <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {/* System Status Card */}
+                <div className="bg-white/80 backdrop-blur-xl dark:bg-slate-800/80 rounded-2xl shadow-xl border border-green-200/30 p-6 relative group hover:shadow-green-500/20 transition-all duration-300 mobile-card-spacing">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 shadow-lg">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    <div className="ml-3 md:ml-4 min-w-0 flex-1">
-                      <p className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300 truncate">System Status</p>
-                      <p className="text-3xl font-bold text-green-600 dark:text-green-400 animate-pulse group-hover:animate-neon-pulse">Online</p>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">System Status</p>
+                      <p className="text-2xl font-bold text-green-600 dark:text-green-400">Online</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white/70 backdrop-blur-xl dark:bg-slate-800/70 rounded-2xl shadow-2xl border border-white/30 p-4 md:p-6 relative group hover-glow-purple transform hover:scale-105 transition-all duration-500 animate-fade-in sparkles sm:col-span-2 lg:col-span-1" style={{animationDelay: '0.6s'}}>
-                  {/* Card glow effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl glow-intense-purple"></div>
-                  
-                  {/* Sparkling overlay */}
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="absolute top-2 right-4 w-2 h-2 bg-purple-400 rounded-full animate-twinkle" style={{animationDelay: '0.6s'}}></div>
-                    <div className="absolute top-5 left-2 w-1 h-1 bg-pink-300 rounded-full animate-sparkle" style={{animationDelay: '1.1s'}}></div>
-                    <div className="absolute bottom-2 right-2 w-1.5 h-1.5 bg-purple-300 rounded-full animate-twinkle" style={{animationDelay: '1.5s'}}></div>
-                  </div>
-                  
-                  <div className="flex items-center relative z-10">
-                    <div className="p-2 md:p-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 shadow-lg group-hover:shadow-purple-500/50 transform group-hover:scale-110 transition-all duration-300 animate-pulse-slow group-hover:animate-neon-pulse" style={{animationDelay: '1s'}}>
-                      <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {/* Features Card */}
+                <div className="bg-white/80 backdrop-blur-xl dark:bg-slate-800/80 rounded-2xl shadow-xl border border-purple-200/30 p-6 relative group hover:shadow-purple-500/20 transition-all duration-300 sm:col-span-2 lg:col-span-1 mobile-card-spacing">
+                  <div className="flex items-center space-x-4">
+                    <div className="p-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 shadow-lg">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
-                    <div className="ml-3 md:ml-4 min-w-0 flex-1">
-                      <p className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 truncate">Features</p>
-                      <p className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white group-hover:animate-neon-pulse">9 Modules</p>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Active Modules</p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">9 Modules</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Admin Features Grid */}
-              <div className="mb-6 md:mb-8">
-                <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6 animate-fade-in animate-gradient-text">Administrative Modules</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+              <div className="mb-6 md:mb-8 mobile-admin-section">
+                <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6 animate-fade-in animate-gradient-text mobile-section-title">Administrative Modules</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mobile-admin-grid">
                   {adminFeatures.map((feature, index) => {
                     const colors = getColorClasses(feature, false);
                     return (
                       <Link
                         key={feature.name}
                         to={feature.href}
-                        className="group relative overflow-hidden bg-white/70 backdrop-blur-xl dark:bg-slate-800/70 rounded-2xl shadow-2xl border border-white/30 hover:shadow-2xl transition-all duration-500 hover:scale-105 sparkles animate-fade-in"
+                        className="group relative overflow-hidden bg-white/70 backdrop-blur-xl dark:bg-slate-800/70 rounded-2xl shadow-2xl border border-white/30 hover:shadow-2xl transition-all duration-500 hover:scale-105 sparkles animate-fade-in mobile-backdrop-blur mobile-feature-card mobile-shadow mobile-rounded mobile-no-scale mobile-card-spacing"
                         style={{animationDelay: `${index * 0.1}s`}}
                       >
                         {/* Card glow effect with individual colors */}
