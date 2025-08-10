@@ -99,36 +99,49 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex relative overflow-hidden">
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-50 ${sidebarExpanded ? 'w-64' : 'w-20'} bg-white/90 backdrop-blur-lg dark:bg-slate-900/90 shadow-xl border-r border-white/20 transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 flex flex-col`}>
-        <div className="flex items-center h-16 px-4 border-b border-gray-200 dark:border-gray-700">
+      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} fixed inset-y-0 left-0 z-50 ${sidebarExpanded ? 'w-64' : 'w-20'} bg-white/90 backdrop-blur-xl dark:bg-slate-900/90 shadow-2xl border-r border-white/30 transition-all duration-500 ease-in-out lg:translate-x-0 lg:static lg:inset-0 flex flex-col relative group`}>
+        {/* Sidebar Glow Effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-lg -m-1"></div>
+        
+        <div className="flex items-center h-16 px-4 border-b border-gray-200/50 dark:border-gray-700/50 relative z-10">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg hover:shadow-blue-500/25 transition-all duration-300 hover:scale-110 animate-pulse">
               <span className="text-white font-bold text-sm">A</span>
             </div>
             {sidebarExpanded && (
-              <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent whitespace-nowrap">
+              <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent whitespace-nowrap animate-fade-in">
                 Admin Panel
               </span>
             )}
           </div>
         </div>
         
-        <nav className="mt-5 px-2 flex-1">
-          <div className="space-y-1">
-            {adminFeatures.map((feature) => (
+        <nav className="mt-5 px-2 flex-1 relative z-10">
+          <div className="space-y-2">
+            {adminFeatures.map((feature, index) => (
               <Link
                 key={feature.name}
                 to={feature.href}
-                className={`group flex items-center px-3 py-3 text-sm font-medium rounded-lg text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200 ${!sidebarExpanded ? 'justify-center w-12 h-12 mx-auto' : 'w-full'}`}
+                className={`group flex items-center px-3 py-3 text-sm font-medium rounded-xl text-gray-900 dark:text-gray-100 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 dark:hover:from-slate-800/50 dark:hover:to-indigo-800/30 transition-all duration-300 transform hover:scale-105 hover:shadow-lg hover:shadow-blue-500/10 relative overflow-hidden ${!sidebarExpanded ? 'justify-center w-12 h-12 mx-auto' : 'w-full'}`}
                 title={!sidebarExpanded ? `${feature.name} - ${feature.description}` : ''}
+                style={{
+                  animationDelay: `${index * 100}ms`
+                }}
               >
-                <span className={`text-xl ${!sidebarExpanded ? 'mx-0' : 'mr-3'} flex-shrink-0`}>{feature.icon}</span>
+                {/* Hover glow effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-400/0 to-purple-400/0 group-hover:from-blue-400/10 group-hover:to-purple-400/10 transition-all duration-500 rounded-xl"></div>
+                
+                <span className={`text-xl ${!sidebarExpanded ? 'mx-0' : 'mr-3'} flex-shrink-0 transform group-hover:scale-110 transition-transform duration-300 relative z-10`}>
+                  {feature.icon}
+                </span>
                 {sidebarExpanded && (
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">{feature.name}</div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  <div className="flex-1 min-w-0 relative z-10">
+                    <div className="text-sm font-semibold text-gray-900 dark:text-white truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                      {feature.name}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors duration-300">
                       {feature.description}
                     </div>
                   </div>
@@ -139,17 +152,20 @@ export default function AdminDashboard() {
         </nav>
 
         {/* Logout Button in Sidebar */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-t border-gray-200/50 dark:border-gray-700/50 relative z-10">
           <Form action="/logout" method="post" className="w-full">
             <button
               type="submit"
-              className={`w-full flex items-center justify-center px-3 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 shadow-lg hover:shadow-xl ${!sidebarExpanded ? 'w-12 h-12 mx-auto' : ''}`}
+              className={`w-full flex items-center justify-center px-3 py-3 border border-transparent text-sm font-medium rounded-xl text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-red-500/25 transform hover:scale-105 group relative overflow-hidden ${!sidebarExpanded ? 'w-12 h-12 mx-auto' : ''}`}
               title={!sidebarExpanded ? 'Logout' : ''}
             >
-              <svg className={`w-4 h-4 ${sidebarExpanded ? 'mr-2' : ''} flex-shrink-0`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {/* Button glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-red-400/0 to-pink-400/0 group-hover:from-red-400/20 group-hover:to-pink-400/20 transition-all duration-500 rounded-xl"></div>
+              
+              <svg className={`w-4 h-4 ${sidebarExpanded ? 'mr-2' : ''} flex-shrink-0 relative z-10 transform group-hover:rotate-12 transition-transform duration-300`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
-              {sidebarExpanded && <span className="whitespace-nowrap">Logout</span>}
+              {sidebarExpanded && <span className="whitespace-nowrap relative z-10">Logout</span>}
             </button>
           </Form>
         </div>
@@ -215,24 +231,53 @@ export default function AdminDashboard() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto p-6 relative">
+          {/* Content background glow */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-purple-50/30 dark:from-blue-900/10 dark:to-purple-900/10 pointer-events-none"></div>
+          
           {isNestedRoute ? (
-            <Outlet />
+            <div className="relative z-10">
+              <Outlet />
+            </div>
           ) : (
-            <>
+            <div className="relative z-10">
               {/* Welcome Section */}
-              <div className="mb-8">
-                <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+              <div className="mb-8 animate-fade-in">
+                <div className="bg-white/70 backdrop-blur-xl dark:bg-slate-800/70 rounded-3xl shadow-2xl border border-white/30 p-8 relative overflow-hidden group hover:shadow-blue-500/10 transition-all duration-500 transform hover:scale-[1.01]">
+                  {/* Subtle sparkling overlay */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-50 transition-opacity duration-700">
+                    <div className="absolute top-8 right-16 w-0.5 h-0.5 bg-blue-300/60 rounded-full animate-twinkle"></div>
+                    <div className="absolute bottom-12 left-20 w-0.5 h-0.5 bg-purple-300/60 rounded-full animate-twinkle" style={{animationDelay: '1s'}}></div>
+                    <div className="absolute top-20 left-1/3 w-0.5 h-0.5 bg-cyan-300/60 rounded-full animate-twinkle" style={{animationDelay: '2s'}}></div>
+                  </div>
+                  
+                  {/* Subtle card glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/3 to-purple-500/3 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+                  
+                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between relative z-10 space-y-4 lg:space-y-0">
+                    <div className="animate-slide-in-left">
+                      <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white animate-gradient-text">
                         Welcome back, Administrator! 👋
                       </h2>
-                      <p className="mt-2 text-gray-600 dark:text-gray-300">
+                      <p className="mt-2 md:mt-3 text-base md:text-lg text-gray-600 dark:text-gray-300">
                         Manage your educational platform with powerful administrative tools
                       </p>
                     </div>
-                    <div className="hidden lg:block">
+                    
+                    {/* Mobile Stats */}
+                    <div className="lg:hidden grid grid-cols-2 gap-4 animate-slide-in-up">
+                      <div className="text-center bg-blue-500/10 rounded-lg p-3">
+                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{studentCount}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">Total Students</div>
+                      </div>
+                      <div className="text-center bg-green-500/10 rounded-lg p-3">
+                        <div className="text-2xl font-bold text-green-600 dark:text-green-400">9</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">Active Modules</div>
+                      </div>
+                    </div>
+                    
+                    {/* Desktop Stats */}
+                    <div className="hidden lg:block animate-slide-in-right">
                       <div className="flex items-center space-x-8">
                         <div className="text-center">
                           <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">{studentCount}</div>
@@ -249,84 +294,128 @@ export default function AdminDashboard() {
               </div>
 
               {/* Quick Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-6">
-                  <div className="flex items-center">
-                    <div className="p-3 rounded-lg bg-blue-500">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+                <div className="bg-white/70 backdrop-blur-xl dark:bg-slate-800/70 rounded-2xl shadow-2xl border border-white/30 p-4 md:p-6 relative group hover-glow-blue transform hover:scale-105 transition-all duration-500 animate-fade-in sparkles" style={{animationDelay: '0.2s'}}>
+                  {/* Card glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl glow-intense-blue"></div>
+                  
+                  {/* Sparkling overlay */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute top-2 right-2 w-2 h-2 bg-blue-400 rounded-full animate-twinkle"></div>
+                    <div className="absolute top-4 left-4 w-1 h-1 bg-cyan-300 rounded-full animate-sparkle" style={{animationDelay: '0.5s'}}></div>
+                    <div className="absolute bottom-3 right-6 w-1.5 h-1.5 bg-blue-300 rounded-full animate-twinkle" style={{animationDelay: '1s'}}></div>
+                  </div>
+                  
+                  <div className="flex items-center relative z-10">
+                    <div className="p-2 md:p-3 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 shadow-lg group-hover:shadow-blue-500/50 transform group-hover:scale-110 transition-all duration-300 animate-pulse-slow group-hover:animate-neon-pulse">
+                      <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                       </svg>
                     </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Students</p>
-                      <p className="text-2xl font-semibold text-gray-900 dark:text-white">{studentCount}</p>
+                    <div className="ml-3 md:ml-4 min-w-0 flex-1">
+                      <p className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 truncate">Active Students</p>
+                      <p className="text-xl md:text-3xl font-bold text-gray-900 dark:text-white animate-pulse group-hover:animate-neon-pulse">{studentCount}</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-6">
-                  <div className="flex items-center">
-                    <div className="p-3 rounded-lg bg-green-500">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white/70 backdrop-blur-xl dark:bg-slate-800/70 rounded-2xl shadow-2xl border border-white/30 p-4 md:p-6 relative group hover-glow-green transform hover:scale-105 transition-all duration-500 animate-fade-in sparkles" style={{animationDelay: '0.4s'}}>
+                  {/* Card glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-green-500/20 to-emerald-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl glow-intense-green"></div>
+                  
+                  {/* Sparkling overlay */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute top-3 right-3 w-2 h-2 bg-green-400 rounded-full animate-twinkle" style={{animationDelay: '0.3s'}}></div>
+                    <div className="absolute top-6 left-3 w-1 h-1 bg-emerald-300 rounded-full animate-sparkle" style={{animationDelay: '0.8s'}}></div>
+                    <div className="absolute bottom-4 right-8 w-1.5 h-1.5 bg-green-300 rounded-full animate-twinkle" style={{animationDelay: '1.2s'}}></div>
+                  </div>
+                  
+                  <div className="flex items-center relative z-10">
+                    <div className="p-2 md:p-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 shadow-lg group-hover:shadow-green-500/50 transform group-hover:scale-110 transition-all duration-300 animate-pulse-slow group-hover:animate-neon-pulse" style={{animationDelay: '0.5s'}}>
+                      <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">System Status</p>
-                      <p className="text-2xl font-semibold text-green-600 dark:text-green-400">Online</p>
+                    <div className="ml-3 md:ml-4 min-w-0 flex-1">
+                      <p className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300 truncate">System Status</p>
+                      <p className="text-3xl font-bold text-green-600 dark:text-green-400 animate-pulse group-hover:animate-neon-pulse">Online</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 p-6">
-                  <div className="flex items-center">
-                    <div className="p-3 rounded-lg bg-purple-500">
-                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="bg-white/70 backdrop-blur-xl dark:bg-slate-800/70 rounded-2xl shadow-2xl border border-white/30 p-4 md:p-6 relative group hover-glow-purple transform hover:scale-105 transition-all duration-500 animate-fade-in sparkles sm:col-span-2 lg:col-span-1" style={{animationDelay: '0.6s'}}>
+                  {/* Card glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-pink-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl glow-intense-purple"></div>
+                  
+                  {/* Sparkling overlay */}
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute top-2 right-4 w-2 h-2 bg-purple-400 rounded-full animate-twinkle" style={{animationDelay: '0.6s'}}></div>
+                    <div className="absolute top-5 left-2 w-1 h-1 bg-pink-300 rounded-full animate-sparkle" style={{animationDelay: '1.1s'}}></div>
+                    <div className="absolute bottom-2 right-2 w-1.5 h-1.5 bg-purple-300 rounded-full animate-twinkle" style={{animationDelay: '1.5s'}}></div>
+                  </div>
+                  
+                  <div className="flex items-center relative z-10">
+                    <div className="p-2 md:p-3 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 shadow-lg group-hover:shadow-purple-500/50 transform group-hover:scale-110 transition-all duration-300 animate-pulse-slow group-hover:animate-neon-pulse" style={{animationDelay: '1s'}}>
+                      <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Features</p>
-                      <p className="text-2xl font-semibold text-gray-900 dark:text-white">9 Modules</p>
+                    <div className="ml-3 md:ml-4 min-w-0 flex-1">
+                      <p className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 truncate">Features</p>
+                      <p className="text-xl md:text-2xl font-semibold text-gray-900 dark:text-white group-hover:animate-neon-pulse">9 Modules</p>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Admin Features Grid */}
-              <div className="mb-8">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Administrative Modules</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="mb-6 md:mb-8">
+                <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-4 md:mb-6 animate-fade-in animate-gradient-text">Administrative Modules</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                   {adminFeatures.map((feature, index) => (
                     <Link
                       key={feature.name}
                       to={feature.href}
-                      className="group relative overflow-hidden bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-xl shadow-lg border border-white/20 hover:shadow-2xl transition-all duration-300 hover:scale-105"
+                      className="group relative overflow-hidden bg-white/70 backdrop-blur-xl dark:bg-slate-800/70 rounded-2xl shadow-2xl border border-white/30 hover:shadow-2xl transition-all duration-500 hover:scale-105 sparkles animate-fade-in hover-glow-blue"
+                      style={{animationDelay: `${index * 0.1}s`}}
                     >
-                      <div className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className={`w-12 h-12 ${feature.iconBg} rounded-lg flex items-center justify-center text-2xl shadow-lg`}>
+                      {/* Card glow effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl glow-intense-blue"></div>
+                      
+                      {/* Sparkling overlay */}
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="absolute top-2 right-2 w-2 h-2 bg-blue-400 rounded-full animate-twinkle" style={{animationDelay: `${index * 0.2}s`}}></div>
+                        <div className="absolute top-4 left-4 w-1 h-1 bg-purple-300 rounded-full animate-sparkle" style={{animationDelay: `${index * 0.3}s`}}></div>
+                        <div className="absolute bottom-3 right-6 w-1.5 h-1.5 bg-cyan-300 rounded-full animate-twinkle" style={{animationDelay: `${index * 0.4}s`}}></div>
+                      </div>
+                      
+                      <div className="p-4 md:p-6 relative z-10">
+                        <div className="flex items-center justify-between mb-3 md:mb-4">
+                          <div className={`w-10 h-10 md:w-12 md:h-12 ${feature.iconBg} rounded-xl flex items-center justify-center text-lg md:text-2xl shadow-lg group-hover:shadow-blue-500/50 transform group-hover:scale-110 transition-all duration-300 animate-pulse-slow group-hover:animate-neon-pulse`} style={{animationDelay: `${index * 0.1}s`}}>
                             {feature.icon}
                           </div>
-                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:scale-110 group-hover:rotate-12">
+                            <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                             </svg>
                           </div>
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                        <h3 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300 group-hover:animate-neon-pulse">
                           {feature.name}
                         </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300 group-hover:text-gray-700 dark:group-hover:text-gray-200 transition-colors duration-300 leading-relaxed">
                           {feature.description}
                         </p>
                       </div>
-                      <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${feature.color} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300`}></div>
+                      <div className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${feature.color} transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 group-hover:h-2 group-hover:shadow-lg`}></div>
+                      
+                      {/* Shimmer effect overlay */}
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-30 animate-shimmer transition-opacity duration-500 rounded-2xl"></div>
                     </Link>
                   ))}
                 </div>
               </div>
-            </>
+            </div>
           )}
         </main>
       </div>
