@@ -139,7 +139,7 @@ export default function StudentDashboard() {
           className={`
             fixed inset-y-0 left-0 z-50 w-64 bg-white/90 dark:bg-slate-900/90 border-r border-gray-200 dark:border-slate-700
             transition-transform duration-300 ease-in-out ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:static lg:translate-x-0
-            backdrop-blur-xl group hover-glow-red
+            backdrop-blur-xl group hover-glow-red student-mobile-sidebar
           `}
         >
           <div className="flex flex-col h-full">
@@ -210,14 +210,14 @@ export default function StudentDashboard() {
         {/* MAIN CONTENT */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Header */}
-          <header className="bg-white/80 dark:bg-slate-900/80 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-30 backdrop-blur-xl animate-fade-in">
+          <header className="bg-white/80 dark:bg-slate-900/80 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-30 backdrop-blur-xl animate-fade-in student-mobile-header">
             <div className="px-4 sm:px-6 lg:px-8">
               <div className="flex items-center justify-between h-16">
-                {/* Hamburger for mobile */}
-                <div className="flex items-center space-x-4">
+                {/* Left side - Hamburger and Title */}
+                <div className="flex items-center space-x-4 flex-1 min-w-0">
                   <button
                     onClick={() => setSidebarOpen((v) => !v)}
-                    className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 lg:hidden transform hover:scale-110 transition-all duration-300"
+                    className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 lg:hidden transform hover:scale-110 transition-all duration-300 student-mobile-hamburger"
                     aria-label="Toggle sidebar"
                     aria-expanded={sidebarOpen}
                   >
@@ -225,15 +225,17 @@ export default function StudentDashboard() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                   </button>
-                  <div className="group">
-                    <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent animate-gradient-text group-hover:scale-105 transition-transform duration-300">
+                  
+                  <div className="group student-header-group flex-1 min-w-0">
+                    <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent animate-gradient-text group-hover:scale-105 transition-transform duration-300 student-mobile-title truncate">
                       Student Dashboard
                     </h1>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-red-500 dark:group-hover:text-red-400 transition-colors duration-300">Focus on career growth</p>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-red-500 dark:group-hover:text-red-400 transition-colors duration-300 student-mobile-subtitle truncate">Focus on career growth</p>
                   </div>
                 </div>
-                {/* Current User and Logout - right zone */}
-                <div className="flex items-center space-x-3">
+                
+                {/* Right side - User info and Logout */}
+                <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
                   <div className="hidden md:flex items-center space-x-3">
                     <div className="text-right group">
                       <p className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">Student</p>
@@ -245,13 +247,16 @@ export default function StudentDashboard() {
                       <span className="text-white text-sm font-semibold">{user?.name?.[0]?.toUpperCase() ?? 'ST'}</span>
                     </div>
                   </div>
-                  <Form method="post" action="/logout" className="ml-2">
+                  
+                  {/* Logout Button - Edge right position on mobile */}
+                  <Form method="post" action="/logout" className="ml-auto">
                     <button
                       type="submit"
-                      className="p-2 rounded-full text-gray-400 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 transition-all duration-300"
+                      className="p-2 rounded-full text-gray-400 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 transition-all duration-300 hover:bg-red-50 dark:hover:bg-red-900/20 mobile-logout-edge"
                       aria-label="Logout"
+                      title="Logout"
                     >
-                      <svg className="w-6 h-6 animate-pulse-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                       </svg>
                     </button>
@@ -260,15 +265,16 @@ export default function StudentDashboard() {
               </div>
             </div>
           </header>
+
           {/* MAIN CONTENT ROUTER OUTLET */}
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 student-mobile-main">
             {isNestedRoute ? (
               <Outlet />
             ) : (
               <>
                 {/* Welcome Section */}
                 <div className="mb-6">
-                  <div className="bg-white/70 dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-5 sm:p-6 flex flex-col sm:flex-row items-center sm:justify-between">
+                  <div className="bg-white/70 dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-5 sm:p-6 flex flex-col sm:flex-row items-center sm:justify-between student-mobile-welcome">
                     <div className="flex-1">
                       <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
                         Welcome back, {user?.name || 'Student'}! 👋
@@ -287,7 +293,7 @@ export default function StudentDashboard() {
                   </div>
                 </div>
                 {/* Buttons Section */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-6 student-mobile-grid">
                   <Link
                     to="/student/homework"
                     className="bg-white/70 backdrop-blur-xl dark:bg-slate-800/70 rounded-2xl shadow-2xl border border-white/30 p-6 relative group hover-glow-red transform hover:scale-105 transition-all duration-500 animate-fade-in sparkles"

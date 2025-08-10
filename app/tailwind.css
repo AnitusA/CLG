@@ -2251,3 +2251,221 @@ body {
     padding-right: 56px !important;
   }
 }
+
+/* Student Dashboard Mobile Fixes */
+@media (max-width: 768px) {
+  /* Student dashboard header improvements */
+  .student-mobile-header {
+    padding: 0.5rem 1rem !important;
+    min-height: 60px !important;
+  }
+  
+  .student-mobile-title {
+    font-size: 1.25rem !important;
+    line-height: 1.4 !important;
+    margin-bottom: 2px !important;
+  }
+  
+  .student-mobile-subtitle {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  .student-header-group {
+    margin-left: 0.5rem !important;
+  }
+  
+  /* Mobile hamburger button spacing */
+  .student-mobile-hamburger {
+    padding: 0.5rem !important;
+    margin-right: 0.5rem !important;
+  }
+  
+  /* Student dashboard main content mobile fixes */
+  .student-mobile-main {
+    padding: 0.75rem !important;
+  }
+  
+  .student-mobile-welcome {
+    padding: 1rem !important;
+    margin-bottom: 1rem !important;
+    border-radius: 1rem !important;
+  }
+  
+  .student-mobile-welcome h2 {
+    font-size: 1.25rem !important;
+    line-height: 1.4 !important;
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .student-mobile-welcome p {
+    font-size: 0.875rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  /* Student dashboard grid mobile fixes */
+  .student-mobile-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  .student-mobile-card {
+    padding: 1rem !important;
+    border-radius: 1rem !important;
+  }
+  
+  .student-mobile-card h3 {
+    font-size: 1rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  .student-mobile-card p {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  .student-mobile-card-number {
+    font-size: 1.5rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  /* Student sidebar mobile fixes */
+  .student-mobile-sidebar {
+    width: 280px !important;
+    max-width: 85vw !important;
+  }
+  
+  .student-mobile-nav-item {
+    padding: 0.75rem !important;
+    margin-bottom: 0.25rem !important;
+    border-radius: 0.75rem !important;
+  }
+  
+  .student-mobile-nav-text {
+    font-size: 0.875rem !important;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  .student-mobile-title {
+    font-size: 1.125rem !important;
+  }
+  
+  .student-mobile-subtitle {
+    display: none !important; /* Hide subtitle on very small screens */
+  }
+  
+  .student-mobile-welcome h2 {
+    font-size: 1.125rem !important;
+  }
+  
+  .student-mobile-card {
+    padding: 0.75rem !important;
+  }
+  
+  .student-mobile-main {
+    padding: 0.5rem !important;
+  }
+}
+
+/* Mobile logout button edge positioning for student dashboard */
+.mobile-logout-edge {
+  margin-left: auto !important;
+}
+
+@media (max-width: 768px) {
+  .mobile-logout-edge {
+    position: absolute !important;
+    right: 8px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    margin: 0 !important;
+    z-index: 50 !important;
+    /* Make button more visible on mobile */
+    background-color: rgba(239, 68, 68, 0.15) !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
+    color: rgb(239, 68, 68) !important;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2) !important;
+  }
+  
+  .mobile-logout-edge:hover {
+    background-color: rgba(239, 68, 68, 0.25) !important;
+    border-color: rgba(239, 68, 68, 0.5) !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+  }
+  
+  /* Ensure header has proper spacing on mobile and relative positioning for absolute logout */
+  .student-mobile-header {
+    position: relative !important;
+  }
+  
+  .student-mobile-header .px-4 {
+    padding-left: 1rem !important;
+    padding-right: 3rem !important; /* Add space for absolute logout button */
+  }
+  
+  /* Ensure the right side container doesn't interfere with absolute positioning */
+  .student-mobile-header .flex-shrink-0 {
+    position: relative !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .mobile-logout-edge {
+    position: absolute !important;
+    right: 4px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    margin: 0 !important;
+    z-index: 50 !important;
+    /* Even more visible on smaller screens */
+    background-color: rgba(239, 68, 68, 0.2) !important;
+    border: 2px solid rgba(239, 68, 68, 0.4) !important;
+    color: rgb(239, 68, 68) !important;
+    box-shadow: 0 3px 10px rgba(239, 68, 68, 0.3) !important;
+    padding: 8px !important; /* Slightly larger touch target */
+  }
+  
+  .mobile-logout-edge:hover {
+    background-color: rgba(239, 68, 68, 0.3) !important;
+    border-color: rgba(239, 68, 68, 0.6) !important;
+    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4) !important;
+  }
+  
+  /* Adjust header padding for smaller screens */
+  .student-mobile-header .px-4 {
+    padding-right: 3.5rem !important; /* Extra space for larger button */
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-logout-edge {
+    position: absolute !important;
+    right: 2px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    margin: 0 !important;
+    z-index: 50 !important;
+    /* Most visible on very small screens */
+    background-color: rgba(239, 68, 68, 0.25) !important;
+    border: 2px solid rgba(239, 68, 68, 0.5) !important;
+    padding: 10px !important; /* Larger touch target for very small screens */
+    border-radius: 8px !important;
+    color: rgb(239, 68, 68) !important;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4) !important;
+  }
+  
+  .mobile-logout-edge:hover {
+    background-color: rgba(239, 68, 68, 0.35) !important;
+    border-color: rgba(239, 68, 68, 0.7) !important;
+    box-shadow: 0 6px 18px rgba(239, 68, 68, 0.5) !important;
+  }
+  
+  .student-mobile-header .px-4 {
+    padding-left: 0.75rem !important;
+    padding-right: 4rem !important; /* Extra space for larger button */
+  }
+}
+
