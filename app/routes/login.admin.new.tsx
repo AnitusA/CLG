@@ -41,29 +41,8 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-screen oxford-blue-space flex items-center justify-center p-4 animate-fade-in relative overflow-hidden">
-      {/* Stars Field */}
-      <div className="stars-field"></div>
-      
-      {/* Deep Space Nebula */}
-      <div className="deep-space-nebula"></div>
-      
-      {/* Shooting Stars */}
-      <div className="shooting-stars">
-        <div className="shooting-star shooting-star-1"></div>
-        <div className="shooting-star shooting-star-2"></div>
-        <div className="shooting-star shooting-star-3"></div>
-      </div>
-      
-      {/* Space Planets */}
-      <div className="space-planet-1"></div>
-      <div className="space-planet-2"></div>
-      <div className="space-planet-3"></div>
-      
-      {/* Satellite */}
-      <div className="space-satellite"></div>
-      
-      <div className="w-full max-w-md animate-slide-in-up relative z-10">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4 animate-fade-in">
+      <div className="w-full max-w-md animate-slide-in-up">
         {/* Back Button */}
         <div className="mb-6">
           <Link
@@ -90,15 +69,8 @@ export default function AdminLogin() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
-          <h1 className="text-4xl font-bold text-white mb-3" style={{
-            textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-            filter: 'brightness(1.0)',
-            fontWeight: '700'
-          }}>Admin Login</h1>
-          <p className="text-blue-100 text-lg font-medium" style={{
-            textShadow: '1px 1px 2px rgba(0,0,0,0.6)',
-            filter: 'brightness(1.0)'
-          }}>Enter your admin pass key to access the dashboard</p>
+          <h1 className="text-3xl font-bold text-white mb-2">Admin Login</h1>
+          <p className="text-blue-200">Enter your admin pass key to access the dashboard</p>
         </div>
 
         {/* Login Card */}

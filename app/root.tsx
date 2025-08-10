@@ -6,6 +6,7 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import type { LinksFunction } from "@remix-run/node";
+import { LoadingTransition } from "~/components/LoadingTransition";
 
 import "./tailwind.css";
 
@@ -41,5 +42,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <div className="animate-fade-in">
+      <LoadingTransition />
+      <Outlet />
+    </div>
+  );
 }

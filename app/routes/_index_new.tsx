@@ -11,22 +11,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 export default function LoginSelection() {
   return (
     <div className="min-h-screen oxford-blue-space flex items-center justify-center p-4 animate-fade-in relative overflow-hidden">
-      {/* Enhanced Dense Stars Field */}
+      {/* Stars Field */}
       <div className="stars-field"></div>
-      
-      {/* Galaxies */}
-      <div className="space-galaxy"></div>
-      <div className="space-galaxy-2"></div>
-      
-      {/* Space Shuttle */}
-      <div className="space-shuttle"></div>
-      
-      {/* Satellites */}
-      <div className="satellite-1"></div>
-      <div className="satellite-2"></div>
-      
-      {/* Floating Astronaut */}
-      <div className="space-astronaut"></div>
       
       {/* Deep Space Nebula */}
       <div className="deep-space-nebula"></div>
@@ -61,14 +47,13 @@ export default function LoginSelection() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
-          <h1 className="text-6xl font-bold text-white mb-5" style={{
-            textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
-            filter: 'brightness(1.0)',
-            fontWeight: '700'
+          <h1 className="text-6xl font-bold text-white mb-5 animate-gradient-text" style={{
+            textShadow: '0 0 8px rgba(255,255,255,0.6), 2px 2px 4px rgba(0,0,0,0.8)',
+            filter: 'brightness(1.1)'
           }}>Welcome Back</h1>
           <p className="text-2xl text-blue-100 font-medium" style={{
-            textShadow: '1px 1px 2px rgba(0,0,0,0.6)',
-            filter: 'brightness(1.0)'
+            textShadow: '0 0 6px rgba(255,255,255,0.5), 1px 1px 2px rgba(0,0,0,0.7)',
+            filter: 'brightness(1.05)'
           }}>Sign in to access your account</p>
         </div>
 
