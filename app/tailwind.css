@@ -9,6 +9,51 @@ body {
   @media (prefers-color-scheme: dark) {
     color-scheme: dark;
   }
+  
+  /* Mobile viewport fixes */
+  @media (max-width: 768px) {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* Global mobile container fix */
+@media (max-width: 768px) {
+  * {
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix any potential viewport issues */
+  .container,
+  .max-w-7xl,
+  .max-w-6xl,
+  .max-w-5xl,
+  .max-w-4xl,
+  .max-w-3xl,
+  .max-w-2xl,
+  .max-w-xl {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  /* Fix any grid that might overflow */
+  .grid {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* Fix any flex containers */
+  .flex {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
 }
 
 /* Custom Animations for Admin Dashboard */
@@ -1230,4 +1275,475 @@ body {
   opacity: 0;
   transform: translateY(-20px) scale(1.05);
   transition: all 0.3s cubic-bezier(0.55, 0, 0.55, 0.2);
+}
+
+/* Mobile-Specific Fixes for Admin Dashboard */
+@media (max-width: 768px) {
+  /* Fix mobile sidebar issues */
+  .mobile-sidebar-fix {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .mobile-sidebar-open {
+    transform: translateX(0);
+  }
+  
+  /* Fix mobile header spacing */
+  .mobile-header {
+    padding: 0.75rem 1rem;
+    min-height: 60px;
+  }
+  
+  /* Fix mobile content padding and overflow */
+  .mobile-content {
+    padding: 0.75rem !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix mobile card grid - prevent overflow */
+  .mobile-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .mobile-grid-2 {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+  }
+  
+  /* Fix mobile cards - prevent cutoff */
+  .mobile-stats {
+    padding: 0.75rem !important;
+    margin-bottom: 1rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  .mobile-feature-card {
+    padding: 0.75rem !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    min-height: auto !important;
+  }
+  
+  /* Fix mobile welcome section */
+  .mobile-welcome {
+    padding: 1rem !important;
+    margin: 0 0 1rem 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix mobile container width issues */
+  .mobile-container-fix {
+    width: 100% !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Fix mobile text sizing */
+  .mobile-text-lg {
+    font-size: 1rem !important;
+    line-height: 1.5rem !important;
+  }
+  
+  .mobile-text-xl {
+    font-size: 1.125rem !important;
+    line-height: 1.75rem !important;
+  }
+  
+  .mobile-text-2xl {
+    font-size: 1.25rem !important;
+    line-height: 1.75rem !important;
+  }
+  
+  /* Fix mobile spacing - more aggressive */
+  .mobile-space-y-2 > * + * {
+    margin-top: 0.5rem !important;
+  }
+  
+  .mobile-space-y-3 > * + * {
+    margin-top: 0.75rem !important;
+  }
+  
+  .mobile-space-y-4 > * + * {
+    margin-top: 1rem !important;
+  }
+  
+  /* Fix mobile padding utilities */
+  .xs-mobile-padding {
+    padding: 0.5rem !important;
+  }
+  
+  .mobile-padding-fix {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  /* Fix mobile margin utilities */
+  .xs-mobile-margin {
+    margin: 0.25rem !important;
+  }
+  
+  /* Fix mobile button spacing */
+  .mobile-btn {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix mobile grid layouts - more specific */
+  .xs-mobile-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Fix mobile main container */
+  .mobile-main-fix {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  /* Fix mobile content wrapper */
+  .mobile-content-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0.75rem !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+  
+  /* Fix mobile floating background elements */
+  .mobile-bg-fix {
+    display: none !important;
+  }
+  
+  /* Fix mobile sidebar width */
+  .mobile-sidebar-width {
+    width: 280px !important;
+    max-width: 85vw !important;
+  }
+  
+  /* Enhanced mobile sidebar fixes */
+  .mobile-sidebar-container {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    width: 280px !important;
+    max-width: 85vw !important;
+    z-index: 50 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    border-right: 1px solid rgba(229, 231, 235, 0.3) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  .mobile-sidebar-header {
+    padding: 1rem !important;
+    border-bottom: 1px solid rgba(229, 231, 235, 0.3) !important;
+    flex-shrink: 0 !important;
+    min-height: 70px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  
+  .mobile-sidebar-nav {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 0.5rem !important;
+  }
+  
+  .mobile-sidebar-footer {
+    flex-shrink: 0 !important;
+    padding: 1rem !important;
+    border-top: 1px solid rgba(229, 231, 235, 0.3) !important;
+  }
+  
+  /* Fix mobile overlay */
+  .mobile-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+  }
+  
+  /* Fix mobile navigation spacing */
+  .mobile-nav-item {
+    padding: 0.75rem !important;
+    margin-bottom: 0.25rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    min-height: 50px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  
+  .mobile-nav-container {
+    width: 100% !important;
+    padding: 0 0.5rem !important;
+    overflow-y: auto !important;
+    max-height: calc(100vh - 200px) !important;
+  }
+  
+  .mobile-nav-text {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+  }
+  
+  .mobile-logout-container {
+    padding: 1rem 0.5rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Fix mobile icon sizes */
+  .mobile-icon {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+  
+  .mobile-icon-lg {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+  }
+  
+  /* Fix mobile scrolling */
+  .mobile-scroll {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    height: calc(100vh - 60px) !important;
+    width: 100% !important;
+  }
+  
+  /* Fix mobile content spacing */
+  .mobile-content-spacing {
+    padding: 0.75rem !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+  
+  /* Fix mobile gradient backgrounds */
+  .mobile-bg-simple {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+  }
+  
+  /* Fix mobile animation performance */
+  .mobile-reduce-motion {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+  
+  /* Fix mobile touch targets */
+  .mobile-touch-target {
+    min-height: 44px !important;
+    min-width: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  
+  /* Mobile Button Styling */
+  .mobile-btn {
+    padding: 0.75rem 1rem !important;
+    min-height: 44px !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  
+  /* Fix mobile flex layouts */
+  .mobile-flex-col {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+  }
+  
+  .mobile-flex-center {
+    justify-content: center !important;
+    align-items: center !important;
+  }
+  
+  /* Fix mobile shadow effects */
+  .mobile-shadow {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+  }
+  
+  .mobile-shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  }
+  
+  /* Fix mobile borders */
+  .mobile-border {
+    border: 1px solid rgba(229, 231, 235, 0.8) !important;
+  }
+  
+  /* Fix mobile backdrop blur (reduce intensity for performance) */
+  .mobile-backdrop-blur {
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+  }
+  
+  /* Override any transform scaling on mobile */
+  .mobile-no-scale {
+    transform: none !important;
+  }
+  
+  .mobile-no-scale:hover {
+    transform: none !important;
+  }
+  
+  /* Fix mobile rounded corners */
+  .mobile-rounded {
+    border-radius: 0.5rem !important;
+  }
+  
+  /* Fix mobile overflow issues */
+  .mobile-overflow-fix {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  
+  /* Mobile Sidebar Container Structure */
+  .mobile-sidebar-container {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+    background: linear-gradient(to bottom, rgb(30 41 59 / 0.95), rgb(15 23 42 / 0.95), rgb(30 58 138 / 0.95)) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  
+  .mobile-sidebar-header {
+    flex-shrink: 0 !important;
+    background: linear-gradient(to right, rgb(30 58 138 / 0.2), rgb(51 65 85 / 0.2)) !important;
+    border-bottom: 1px solid rgb(71 85 105 / 0.7) !important;
+  }
+  
+  .mobile-sidebar-nav {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .mobile-sidebar-footer {
+    flex-shrink: 0 !important;
+    border-top: 1px solid rgb(71 85 105 / 0.5) !important;
+  }
+  
+  /* Mobile Sidebar Open/Close States */
+  .mobile-sidebar-open {
+    transform: translateX(0) !important;
+  }
+  
+  .mobile-sidebar-fix {
+    transform: translateX(-100%) !important;
+  }
+  
+  .mobile-sidebar-width {
+    width: 16rem !important; /* 64 in tailwind */
+  }
+}
+
+@media (max-width: 640px) {
+  /* Extra small mobile fixes */
+  .xs-mobile-text {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+  
+  .xs-mobile-padding {
+    padding: 0.75rem;
+  }
+  
+  .xs-mobile-margin {
+    margin: 0.5rem;
+  }
+  
+  .xs-mobile-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  /* Fix very small screen sidebar */
+  .xs-mobile-sidebar {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    background: linear-gradient(to bottom, rgb(30 41 59 / 0.98), rgb(15 23 42 / 0.98), rgb(30 58 138 / 0.98)) !important;
+  }
+  
+  /* Fix very small screen content */
+  .xs-mobile-content {
+    padding: 0.75rem;
+  }
+  
+  /* Fix very small screen buttons */
+  .xs-mobile-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Portrait orientation specific fixes */
+@media (max-width: 768px) and (orientation: portrait) {
+  .portrait-mobile-fix {
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .portrait-content {
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
+  
+  .portrait-sidebar {
+    height: 100vh;
+    overflow-y: auto;
+  }
+}
+
+/* Landscape orientation specific fixes */
+@media (max-width: 768px) and (orientation: landscape) {
+  .landscape-mobile-fix {
+    height: 100vh;
+  }
+  
+  .landscape-content {
+    height: calc(100vh - 50px);
+    overflow-y: auto;
+  }
+  
+  .landscape-header {
+    min-height: 50px;
+    padding: 0.5rem 1rem;
+  }
 }

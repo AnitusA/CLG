@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 
 import { requireAdmin } from '~/lib/session.server';
 import { supabase } from '~/lib/supabase.server';
+import { AdminPageHeader } from '~/components/AdminPageHeader';
 
 // ExamForm Component for adding subjects one by one
 function ExamForm({ onCancel, editingExam = null }: { onCancel: () => void; editingExam?: any }) {
@@ -409,45 +410,18 @@ export default function ExamScheduleManagement() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-lg dark:bg-slate-900/80 shadow-lg border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Link 
-                to="/admin" 
-                className="flex items-center text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors group"
-                title="Back to Dashboard"
-              >
-                <svg className="w-6 h-6 mr-0 sm:mr-2 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-                <span className="font-medium hidden sm:inline">Back to Dashboard</span>
-              </Link>
-              <div className="h-6 w-px bg-gray-300 dark:bg-gray-600"></div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-red-600 to-red-600 bg-clip-text text-transparent flex items-center">
-                <svg className="w-7 h-7 mr-3 text-red-600" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
-                </svg>
-                Exam Schedule Management
-              </h1>
-            </div>
-            
-            <button
-              onClick={() => {
-                setEditingExam(null);
-                setShowForm(!showForm);
-              }}
-              className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 shadow-lg hover:shadow-xl group"
-            >
-              <svg className="w-5 h-5 mr-2 group-hover:rotate-90 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
-              New Exam Schedule
-            </button>
-          </div>
-        </div>
-      </header>
+      <AdminPageHeader 
+        title="Exam Schedule Management" 
+        icon={
+          <svg className="w-7 h-7 mr-3 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+          </svg>
+        }
+        onAddNew={() => {
+          setEditingExam(null);
+          setShowForm(!showForm);
+        }}
+      />
 
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Success Message */}
@@ -465,7 +439,7 @@ export default function ExamScheduleManagement() {
         {/* Create Exam Schedule Form */}
         {showForm && (
           <div className="mb-8 bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Create New Exam Schedule</h2>
+            <h2 className="text-sm sm:text-lg font-semibold text-gray-900 dark:text-white mb-6">Create New Exam Schedule</h2>
             
             <ExamForm onCancel={() => setShowForm(false)} />
 
@@ -485,7 +459,7 @@ export default function ExamScheduleManagement() {
         {/* Edit Exam Schedule Form */}
         {editingExam && (
           <div className="mb-8 bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">Edit Exam Schedule</h2>
+            <h2 className="text-sm sm:text-lg font-semibold text-gray-900 dark:text-white mb-6">Edit Exam Schedule</h2>
             
             <ExamForm onCancel={() => setEditingExam(null)} editingExam={editingExam} />
 
@@ -519,7 +493,7 @@ export default function ExamScheduleManagement() {
             <div key={examTitle} className="bg-white/70 backdrop-blur-lg dark:bg-slate-800/70 rounded-2xl shadow-xl border border-white/20 overflow-hidden">
               <div className="p-6">
                 <div className="flex items-start justify-between mb-6">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  <h3 className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white">
                     {examTitle}
                   </h3>
                   <div className="flex space-x-2">
