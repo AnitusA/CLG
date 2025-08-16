@@ -63,7 +63,7 @@ export default function StudentLogin() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-screen oxford-blue-space flex items-center justify-center p-4 animate-fade-in relative overflow-hidden mobile-login-container">
+    <div className="min-h-screen oxford-blue-space flex items-center justify-center mobile-login-container animate-fade-in relative overflow-hidden">
       {/* Stars Field */}
       <div className="stars-field"></div>
       
@@ -85,14 +85,14 @@ export default function StudentLogin() {
       {/* Satellite */}
       <div className="space-satellite"></div>
       
-      <div className="w-full max-w-md animate-slide-in-up relative z-10 mobile-content-container">
+      <div className="w-full max-w-sm mx-auto animate-slide-in-up relative z-10 mobile-content-container px-4">
         {/* Back Button */}
         <div className="mb-6">
           <Link
             to="/login"
-            className="inline-flex items-center space-x-2 text-blue-200 hover:text-white transition-all duration-300 group transform hover:scale-105 mobile-back-button"
+            className="inline-flex items-center space-x-2 text-blue-200 hover:text-white transition-all duration-300 group transform hover:scale-105 mobile-back-button text-sm"
           >
-            <svg className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             <span>Back to login options</span>
@@ -100,68 +100,68 @@ export default function StudentLogin() {
         </div>
 
         {/* Header */}
-        <div className="text-center mb-8 mobile-login-header">
-          <div className="mx-auto w-20 h-20 sm:w-28 sm:h-28 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-4 sm:mb-6 shadow-2xl relative overflow-hidden group hover:glow-intense-blue animate-bounce-slow mobile-logo">
+        <div className="text-center mb-6 mobile-login-header">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-4 shadow-2xl relative overflow-hidden group hover:glow-intense-blue animate-bounce-slow mobile-logo">
             {/* Header sparkles */}
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-              <div className="absolute top-2 left-4 w-1 h-1 bg-white rounded-full animate-twinkle"></div>
-              <div className="absolute top-6 right-6 w-1 h-1 bg-blue-200 rounded-full animate-twinkle" style={{animationDelay: '0.5s'}}></div>
-              <div className="absolute bottom-4 left-8 w-1 h-1 bg-indigo-200 rounded-full animate-twinkle" style={{animationDelay: '1s'}}></div>
-              <div className="absolute bottom-2 right-4 w-1 h-1 bg-white rounded-full animate-twinkle" style={{animationDelay: '1.5s'}}></div>
+              <div className="absolute top-2 left-3 w-0.5 h-0.5 bg-white rounded-full animate-twinkle"></div>
+              <div className="absolute top-4 right-4 w-0.5 h-0.5 bg-blue-200 rounded-full animate-twinkle" style={{animationDelay: '0.5s'}}></div>
+              <div className="absolute bottom-3 left-6 w-0.5 h-0.5 bg-indigo-200 rounded-full animate-twinkle" style={{animationDelay: '1s'}}></div>
+              <div className="absolute bottom-2 right-3 w-0.5 h-0.5 bg-white rounded-full animate-twinkle" style={{animationDelay: '1.5s'}}></div>
             </div>
-            <svg className="w-14 h-14 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8 text-white relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
-          <h1 className="text-5xl font-bold text-white mb-4 mobile-title" style={{
+          <h1 className="text-2xl font-bold text-white mb-2 mobile-title" style={{
             textShadow: '2px 2px 4px rgba(0,0,0,0.8)',
             filter: 'brightness(1.0)',
             fontWeight: '700'
           }}>Welcome Back</h1>
-          <p className="text-xl text-blue-100 font-medium mobile-subtitle" style={{
+          <p className="text-sm text-blue-100 font-medium mobile-subtitle" style={{
             textShadow: '1px 1px 2px rgba(0,0,0,0.6)',
             filter: 'brightness(1.0)'
           }}>Sign in to access your account</p>
         </div>
 
         {/* Login Card */}
-        <div className="bg-blue-800/30 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-blue-500/30 relative group hover:shadow-blue-400/40 transition-all duration-500 hover:glow-intense-blue animate-shimmer transform hover:scale-102 mobile-login-card">
+        <div className="bg-blue-800/30 backdrop-blur-xl rounded-2xl shadow-2xl overflow-hidden border border-blue-500/30 relative group hover:shadow-blue-400/40 transition-all duration-500 hover:glow-intense-blue animate-shimmer transform hover:scale-102 mobile-login-card">
           {/* Card sparkles */}
           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-            <div className="absolute top-8 left-8 w-1 h-1 bg-blue-400 rounded-full animate-twinkle"></div>
-            <div className="absolute top-16 right-12 w-1 h-1 bg-indigo-400 rounded-full animate-twinkle" style={{animationDelay: '0.3s'}}></div>
-            <div className="absolute bottom-20 left-16 w-1 h-1 bg-white rounded-full animate-twinkle" style={{animationDelay: '0.6s'}}></div>
-            <div className="absolute bottom-8 right-8 w-1 h-1 bg-blue-300 rounded-full animate-twinkle" style={{animationDelay: '0.9s'}}></div>
-            <div className="absolute top-32 left-1/2 w-1 h-1 bg-indigo-300 rounded-full animate-twinkle" style={{animationDelay: '1.2s'}}></div>
+            <div className="absolute top-4 left-4 w-0.5 h-0.5 bg-blue-400 rounded-full animate-twinkle"></div>
+            <div className="absolute top-8 right-6 w-0.5 h-0.5 bg-indigo-400 rounded-full animate-twinkle" style={{animationDelay: '0.3s'}}></div>
+            <div className="absolute bottom-12 left-8 w-0.5 h-0.5 bg-white rounded-full animate-twinkle" style={{animationDelay: '0.6s'}}></div>
+            <div className="absolute bottom-4 right-4 w-0.5 h-0.5 bg-blue-300 rounded-full animate-twinkle" style={{animationDelay: '0.9s'}}></div>
+            <div className="absolute top-16 left-1/2 w-0.5 h-0.5 bg-indigo-300 rounded-full animate-twinkle" style={{animationDelay: '1.2s'}}></div>
           </div>
           
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 to-indigo-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           
           {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-8 py-6 relative overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-700 px-4 py-4 relative overflow-hidden">
             {/* Header sparkles */}
             <div className="absolute inset-0 opacity-30">
-              <div className="absolute top-2 left-8 w-0.5 h-0.5 bg-white rounded-full animate-twinkle"></div>
-              <div className="absolute top-4 right-12 w-0.5 h-0.5 bg-blue-200 rounded-full animate-twinkle" style={{animationDelay: '0.7s'}}></div>
-              <div className="absolute bottom-2 left-16 w-0.5 h-0.5 bg-indigo-200 rounded-full animate-twinkle" style={{animationDelay: '1.4s'}}></div>
+              <div className="absolute top-1 left-4 w-0.5 h-0.5 bg-white rounded-full animate-twinkle"></div>
+              <div className="absolute top-2 right-6 w-0.5 h-0.5 bg-blue-200 rounded-full animate-twinkle" style={{animationDelay: '0.7s'}}></div>
+              <div className="absolute bottom-1 left-8 w-0.5 h-0.5 bg-indigo-200 rounded-full animate-twinkle" style={{animationDelay: '1.4s'}}></div>
             </div>
             
-            <div className="flex items-center space-x-4 relative z-10">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center animate-borderPulse">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex items-center space-x-3 relative z-10">
+              <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center animate-borderPulse">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-white">Student Portal</h2>
+              <h2 className="text-lg font-bold text-white">Student Portal</h2>
             </div>
           </div>
 
           {/* Error Message */}
           {actionData?.error && (
-            <div className="mx-8 mt-6 p-4 bg-red-900/50 border-l-4 border-red-400 rounded-r-lg backdrop-blur-sm animate-shake">
+            <div className="mx-4 mt-4 p-3 bg-red-900/50 border-l-4 border-red-400 rounded-r-lg backdrop-blur-sm animate-shake">
               <div className="flex">
-                <svg className="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="w-4 h-4 text-red-400 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                 </svg>
                 <p className="text-red-200 text-sm">{actionData.error}</p>
@@ -170,15 +170,15 @@ export default function StudentLogin() {
           )}
 
           {/* Login Form */}
-          <div className="p-8 relative z-10">
-            <Form method="post" className="space-y-8">
+          <div className="p-4 relative z-10 mobile-login-form">
+            <Form method="post" className="space-y-6">
               <div className="group animate-slide-in-left">
-                <label htmlFor="registerNumber" className="block text-sm font-semibold text-blue-200 mb-3">
+                <label htmlFor="registerNumber" className="block text-sm font-semibold text-blue-200 mb-2">
                   Register Number
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg className="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg className="h-4 w-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V4a2 2 0 114 0v2m-4 0a2 2 0 104 0m-4 0v2m4-2v2" />
                     </svg>
                   </div>
@@ -188,14 +188,14 @@ export default function StudentLogin() {
                     type="text"
                     required
                     placeholder="Enter your register number"
-                    className="block w-full pl-12 pr-4 py-4 border-2 border-blue-500/30 rounded-2xl focus:outline-none focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 bg-blue-900/30 focus:bg-blue-800/50 hover:border-blue-400/50 text-lg placeholder-blue-300 text-white backdrop-blur-sm md:transform md:focus:scale-105 mobile-login-input"
+                    className="block w-full pl-10 pr-3 py-3 border-2 border-blue-500/30 rounded-xl focus:outline-none focus:ring-4 focus:ring-blue-400/30 focus:border-blue-400 transition-all duration-300 bg-blue-900/30 focus:bg-blue-800/50 hover:border-blue-400/50 text-base placeholder-blue-300 text-white backdrop-blur-sm mobile-login-input"
                     style={{ fontSize: '16px' }}
                   />
                 </div>
               </div>
 
               <div className="group animate-slide-in-right">
-                <label htmlFor="password" className="block text-sm font-semibold text-blue-200 mb-3">
+                <label htmlFor="password" className="block text-sm font-semibold text-blue-200 mb-2">
                   Password
                 </label>
                 <div className="relative">

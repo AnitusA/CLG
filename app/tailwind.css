@@ -1319,7 +1319,151 @@ body {
   50% { opacity: 1; }
 }
 
-/* Enhanced Button and Link Animations */
+/* Mobile Login Container Optimizations */
+.mobile-login-container {
+  padding: 1rem;
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
+}
+
+.mobile-content-container {
+  max-width: 100%;
+  width: 100%;
+}
+
+.mobile-header {
+  margin-bottom: 1.5rem;
+}
+
+.mobile-logo {
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: 1rem;
+}
+
+.mobile-title {
+  font-size: 1.875rem;
+  line-height: 2.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.mobile-subtitle {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  padding: 0 1rem;
+}
+
+.mobile-login-options {
+  gap: 1rem;
+}
+
+.login-card-button {
+  padding: 1rem;
+  border-radius: 1rem;
+}
+
+.login-card-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+}
+
+.login-card-title {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.login-card-description {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.login-card-arrow svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.mobile-footer {
+  margin-top: 2rem;
+}
+
+/* Tablet and larger screens */
+@media (min-width: 640px) {
+  .mobile-login-container {
+    padding: 1rem;
+  }
+  
+  .mobile-header {
+    margin-bottom: 3rem;
+  }
+  
+  .mobile-logo {
+    width: 8rem;
+    height: 8rem;
+    margin-bottom: 2rem;
+  }
+  
+  .mobile-title {
+    font-size: 3rem;
+    line-height: 1;
+    margin-bottom: 1.25rem;
+  }
+  
+  .mobile-subtitle {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    padding: 0;
+  }
+  
+  .mobile-login-options {
+    gap: 1.5rem;
+  }
+  
+  .login-card-button {
+    padding: 2rem;
+    border-radius: 1rem;
+  }
+  
+  .login-card-icon {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1rem;
+  }
+  
+  .login-card-title {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .login-card-description {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+  
+  .login-card-arrow svg {
+    width: 2rem;
+    height: 2rem;
+  }
+  
+  .mobile-footer {
+    margin-top: 3rem;
+  }
+}
+
+/* Large screens */
+@media (min-width: 1024px) {
+  .mobile-title {
+    font-size: 3.75rem;
+    line-height: 1;
+  }
+  
+  .mobile-subtitle {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+}
 .btn-loading {
   position: relative;
   pointer-events: none;
