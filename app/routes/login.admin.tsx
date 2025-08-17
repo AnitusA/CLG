@@ -63,9 +63,9 @@ export default function AdminLogin() {
       {/* Satellite */}
       <div className="space-satellite"></div>
       
-      <div className="w-full max-w-md animate-slide-in-up relative z-10 mobile-content-container">
+      <div className="w-full max-w-[320px] animate-slide-in-up relative z-10 mobile-content-container">
         {/* Back Button */}
-        <div className="mb-6">
+        <div className="mb-4">
           <Link
             to="/login"
             className="inline-flex items-center space-x-2 text-blue-200 hover:text-white transition-colors duration-300 hover:translate-x-1 mobile-back-button"

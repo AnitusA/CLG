@@ -85,9 +85,9 @@ export default function StudentLogin() {
       {/* Satellite */}
       <div className="space-satellite"></div>
       
-      <div className="w-full max-w-sm mx-auto animate-slide-in-up relative z-10 mobile-content-container px-4">
+      <div className="w-full max-w-[320px] mx-auto animate-slide-in-up relative z-10 mobile-content-container px-3">
         {/* Back Button */}
-        <div className="mb-6">
+        <div className="mb-4">
           <Link
             to="/login"
             className="inline-flex items-center space-x-2 text-blue-200 hover:text-white transition-all duration-300 group transform hover:scale-105 mobile-back-button text-sm"
