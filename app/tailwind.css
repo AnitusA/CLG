@@ -2396,6 +2396,243 @@ body {
   }
 }
 
+/* Ultra Compact Login Forms */
+@media (min-width: 640px) {
+  .mobile-content-container {
+    max-width: 320px !important;
+    padding: 0 12px !important;
+  }
+  
+  .mobile-login-card {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .mobile-login-form {
+    padding: 16px !important;
+  }
+  
+  .mobile-login-input {
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+  }
+  
+  .password-input-mobile {
+    padding-left: 40px !important;
+    padding-right: 44px !important;
+  }
+  
+  .mobile-submit-button {
+    padding: 12px 20px !important;
+    font-size: 15px !important;
+  }
+}
+
+/* Comprehensive Mobile Login Optimizations */
+@media (max-width: 768px) {
+  /* Student Login Page Mobile Optimizations */
+  .mobile-login-container {
+    padding: 8px !important;
+    min-height: 100vh !important;
+    min-height: 100svh !important; /* Better mobile viewport support */
+  }
+  
+  .mobile-content-container {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 12px !important;
+    margin: 0 !important;
+  }
+  
+  /* Mobile login header optimizations */
+  .mobile-login-header {
+    margin-bottom: 16px !important;
+    text-align: center !important;
+  }
+  
+  .mobile-login-header .mobile-logo {
+    width: 48px !important;
+    height: 48px !important;
+    margin: 0 auto 12px auto !important;
+  }
+  
+  .mobile-login-header .mobile-logo svg {
+    width: 24px !important;
+    height: 24px !important;
+  }
+  
+  .mobile-login-header .mobile-title {
+    font-size: 20px !important;
+    line-height: 1.3 !important;
+    margin-bottom: 8px !important;
+    font-weight: 700 !important;
+  }
+  
+  .mobile-login-header .mobile-subtitle {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    opacity: 0.9 !important;
+  }
+  
+  /* Mobile login card optimizations */
+  .mobile-login-card {
+    margin: 0 !important;
+    padding: 0 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
+  }
+  
+  .mobile-login-card .bg-gradient-to-r {
+    padding: 12px 16px !important;
+  }
+  
+  .mobile-login-card h2 {
+    font-size: 16px !important;
+    margin: 0 !important;
+  }
+  
+  .mobile-login-card .w-8 {
+    width: 28px !important;
+    height: 28px !important;
+  }
+  
+  .mobile-login-card .w-8 svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  
+  /* Mobile form optimizations */
+  .mobile-login-form {
+    padding: 16px !important;
+  }
+  
+  .mobile-login-form .space-y-6 > * + * {
+    margin-top: 16px !important;
+  }
+  
+  .mobile-login-form label {
+    font-size: 14px !important;
+    margin-bottom: 6px !important;
+    font-weight: 600 !important;
+  }
+  
+  /* Mobile input field optimizations */
+  .mobile-login-input {
+    padding: 12px 16px !important;
+    font-size: 16px !important;
+    border-radius: 12px !important;
+    min-height: 48px !important;
+    line-height: 1.4 !important;
+  }
+  
+  .mobile-login-input:focus {
+    transform: none !important;
+  }
+  
+  /* Mobile password input specific */
+  .password-input-mobile {
+    padding-left: 40px !important;
+    padding-right: 48px !important;
+  }
+  
+  /* Mobile icon positioning */
+  .mobile-login-form .absolute.inset-y-0.left-0 {
+    padding-left: 12px !important;
+  }
+  
+  .mobile-login-form .absolute.inset-y-0.left-0 svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  .mobile-login-form .absolute.inset-y-0.right-0 {
+    padding-right: 12px !important;
+  }
+  
+  .mobile-login-form .absolute.inset-y-0.right-0 svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  /* Mobile submit button optimizations */
+  .mobile-submit-button {
+    padding: 14px 20px !important;
+    font-size: 16px !important;
+    min-height: 48px !important;
+    border-radius: 12px !important;
+    margin-top: 20px !important;
+  }
+  
+  .mobile-submit-button svg {
+    width: 18px !important;
+    height: 18px !important;
+    margin-right: 8px !important;
+  }
+  
+  .mobile-submit-button:hover {
+    transform: none !important;
+  }
+  
+  .mobile-submit-button:active {
+    transform: scale(0.98) !important;
+  }
+  
+  /* Mobile back button optimizations */
+  .mobile-back-button {
+    font-size: 14px !important;
+    padding: 8px 0 !important;
+    margin-bottom: 16px !important;
+  }
+  
+  .mobile-back-button svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  /* Mobile error message optimizations */
+  .mobile-login-card .bg-red-900 {
+    margin: 12px 16px !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+  }
+  
+  .mobile-login-card .bg-red-900 svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  
+  .mobile-login-card .bg-red-900 p {
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+  }
+  
+  /* Mobile help section optimizations */
+  .mobile-login-card .bg-gradient-to-r:last-child {
+    padding: 12px 16px !important;
+  }
+  
+  .mobile-login-card .bg-gradient-to-r:last-child .flex {
+    align-items: flex-start !important;
+  }
+  
+  .mobile-login-card .bg-gradient-to-r:last-child .w-6 {
+    width: 20px !important;
+    height: 20px !important;
+    margin-top: 2px !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .mobile-login-card .bg-gradient-to-r:last-child svg {
+    width: 12px !important;
+    height: 12px !important;
+  }
+  
+  .mobile-login-card .bg-gradient-to-r:last-child span {
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+  }
+}
+
 /* Student Dashboard Mobile Fixes */
 @media (max-width: 768px) {
   /* Student dashboard header improvements */
