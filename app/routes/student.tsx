@@ -119,6 +119,7 @@ export default function StudentDashboard() {
     { name: 'Calendar', href: '/student/calendar', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 2v4M16 2v4M3 10h18" /></svg> },
     { name: 'Events', href: '/student/events', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4" strokeWidth={2} /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h8M12 8v8" /></svg>, count: events?.length || 0 },
     { name: 'Record', href: '/student/record', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>, count: records.length },
+    { name: 'Profile', href: '/student/profile', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg> },
   ];
 
   // --- Student Feature Quick Links ---
@@ -247,6 +248,18 @@ export default function StudentDashboard() {
                       <span className="text-white text-sm font-semibold">{user?.name?.[0]?.toUpperCase() ?? 'ST'}</span>
                     </div>
                   </div>
+                  
+                  {/* Profile Icon */}
+                  <Link
+                    to="/student/details"
+                    className="p-2 rounded-full text-gray-400 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 transition-all duration-300 hover:bg-red-50 dark:hover:bg-red-900/20 group"
+                    aria-label="View Profile Details"
+                    title="View Profile Details"
+                  >
+                    <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </Link>
                   
                   {/* Logout Button - Edge right position on mobile */}
                   <Form method="post" action="/logout" className="ml-auto">
