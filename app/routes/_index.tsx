@@ -1,10 +1,17 @@
 import { json, redirect, type LoaderFunctionArgs } from '@remix-run/node';
 import { Link, useLoaderData } from '@remix-run/react';
-import { getUserId } from '~/lib/session.server';
+import { getUser } from '~/lib/session.server';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const userId = await getUserId(request);
-  if (userId) return redirect('/');
+  const user = await getUser(request);
+  if (user) {
+    // Redirect to appropriate dashboard based on user type
+    if (user.type === 'admin') {
+      return redirect('/admin');
+    } else if (user.type === 'student') {
+      return redirect('/student');
+    }
+  }
   return json({});
 }
 
