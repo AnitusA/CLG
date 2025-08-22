@@ -213,12 +213,13 @@ export default function StudentDashboard() {
           {/* Header */}
           <header className="bg-white/80 dark:bg-slate-900/80 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-30 backdrop-blur-xl animate-fade-in student-mobile-header">
             <div className="px-4 sm:px-6 lg:px-8">
-              <div className="flex items-center justify-between h-16">
-                {/* Left side - Hamburger and Title */}
-                <div className="flex items-center space-x-4 flex-1 min-w-0">
+              <div className="flex items-center justify-between h-16 w-full">
+                {/* Left side - Hamburger Menu + User Icons (Mobile) */}
+                <div className="flex items-center space-x-1">
+                  {/* Hamburger Menu (Mobile Only) */}
                   <button
                     onClick={() => setSidebarOpen((v) => !v)}
-                    className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 lg:hidden transform hover:scale-110 transition-all duration-300 student-mobile-hamburger"
+                    className="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 transform hover:scale-110 transition-all duration-300 student-mobile-hamburger lg:hidden"
                     aria-label="Toggle sidebar"
                     aria-expanded={sidebarOpen}
                   >
@@ -226,50 +227,82 @@ export default function StudentDashboard() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                   </button>
+
+                  {/* Profile Details Icon (Mobile) */}
+                  <Link
+                    to="/student/details"
+                    className="p-2 rounded-full text-gray-400 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 transition-all duration-300 hover:bg-red-50 dark:hover:bg-red-900/20 group lg:hidden"
+                    aria-label="View Profile Details"
+                    title="Profile Details"
+                  >
+                    <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </Link>
                   
-                  <div className="group student-header-group flex-1 min-w-0">
-                    <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent animate-gradient-text group-hover:scale-105 transition-transform duration-300 student-mobile-title truncate">
+                  {/* Logout Button (Mobile) */}
+                  <Form method="post" action="/logout" className="lg:hidden">
+                    <button
+                      type="submit"
+                      className="p-2 rounded-full text-gray-400 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 transition-all duration-300 hover:bg-red-50 dark:hover:bg-red-900/20 group"
+                      aria-label="Logout"
+                      title="Logout"
+                    >
+                      <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                    </button>
+                  </Form>
+                </div>
+
+                {/* Center - Empty space on mobile, Title on desktop */}
+                <div className="hidden md:flex flex-1 justify-center lg:justify-start ml-4">
+                  <div className="group student-header-group">
+                    <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-red-600 to-red-700 bg-clip-text text-transparent animate-gradient-text group-hover:scale-105 transition-transform duration-300 student-mobile-title text-center lg:text-left">
                       Student Dashboard
                     </h1>
-                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-red-500 dark:group-hover:text-red-400 transition-colors duration-300 student-mobile-subtitle truncate">Focus on career growth</p>
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 group-hover:text-red-500 dark:group-hover:text-red-400 transition-colors duration-300 student-mobile-subtitle text-center lg:text-left">Focus on career growth</p>
                   </div>
                 </div>
                 
-                {/* Right side - User info and Logout */}
-                <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
-                  <div className="hidden md:flex items-center space-x-3">
+                {/* Right side - Desktop Only */}
+                <div className="hidden lg:flex items-center space-x-2">
+                  {/* Desktop User Info */}
+                  <div className="flex items-center space-x-3 mr-2">
                     <div className="text-right group">
                       <p className="text-sm font-medium text-gray-900 dark:text-gray-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">Student</p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {new Date(currentDate).toLocaleDateString()}
                       </p>
                     </div>
-                    <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center">
-                      <span className="text-white text-sm font-semibold">{user?.name?.[0]?.toUpperCase() ?? 'ST'}</span>
-                    </div>
+                  </div>
+
+                  {/* Desktop Avatar */}
+                  <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-semibold">{user?.name?.[0]?.toUpperCase() ?? 'ST'}</span>
                   </div>
                   
-                  {/* Profile Icon */}
+                  {/* Desktop Profile Details Icon */}
                   <Link
                     to="/student/details"
                     className="p-2 rounded-full text-gray-400 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 transition-all duration-300 hover:bg-red-50 dark:hover:bg-red-900/20 group"
                     aria-label="View Profile Details"
-                    title="View Profile Details"
+                    title="Profile Details"
                   >
                     <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </Link>
                   
-                  {/* Logout Button - Edge right position on mobile */}
-                  <Form method="post" action="/logout" className="ml-auto">
+                  {/* Desktop Logout Button */}
+                  <Form method="post" action="/logout">
                     <button
                       type="submit"
-                      className="p-2 rounded-full text-gray-400 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 transition-all duration-300 hover:bg-red-50 dark:hover:bg-red-900/20 mobile-logout-edge"
+                      className="p-2 rounded-full text-gray-400 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500 transition-all duration-300 hover:bg-red-50 dark:hover:bg-red-900/20 group"
                       aria-label="Logout"
                       title="Logout"
                     >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                       </svg>
                     </button>

@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 // These should be set in your environment variables
-const supabaseUrl = process.env.SUPABASE_URL || 'your-supabase-url';
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'your-supabase-service-role-key';
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY ;
 
 export const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
   auth: {
