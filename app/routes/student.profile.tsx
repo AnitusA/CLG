@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs, ActionFunctionArgs } from '@remix-run/node';
 import { json, redirect } from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { requireStudent } from '~/lib/session.server';
 import { supabase } from '~/lib/supabase.server';
 
@@ -117,39 +117,52 @@ export default function StudentProfile() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const passwordFormRef = useRef<HTMLFormElement>(null);
+
+  // Clear password form when password change is successful
+  useEffect(() => {
+    if (actionData?.success && activeTab === 'password') {
+      if (passwordFormRef.current) {
+        passwordFormRef.current.reset();
+        setShowCurrentPassword(false);
+        setShowNewPassword(false);
+        setShowConfirmPassword(false);
+      }
+    }
+  }, [actionData, activeTab]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-red-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-rose-50 to-red-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 p-2 sm:p-4 md:p-6 lg:p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
             Student Profile
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             Manage your personal information and account settings
           </p>
         </div>
 
         {/* Success/Error Messages */}
-        {actionData?.success && (
+        {actionData?.success && 'message' in actionData && (
           <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
             {actionData.message}
           </div>
         )}
-        {actionData?.error && (
+        {actionData && 'error' in actionData && actionData.error && (
           <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
             {actionData.error}
           </div>
         )}
 
         {/* Tab Navigation */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <div className="border-b border-gray-200 dark:border-gray-700">
-            <nav className="-mb-px flex space-x-8">
+            <nav className="-mb-px flex space-x-4 sm:space-x-8 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('profile')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                   activeTab === 'profile'
                     ? 'border-red-500 text-red-600 dark:text-red-400'
                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
@@ -159,7 +172,7 @@ export default function StudentProfile() {
               </button>
               <button
                 onClick={() => setActiveTab('password')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                   activeTab === 'password'
                     ? 'border-red-500 text-red-600 dark:text-red-400'
                     : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
@@ -173,8 +186,8 @@ export default function StudentProfile() {
 
         {/* Profile Information Tab */}
         {activeTab === 'profile' && (
-          <div className="bg-white dark:bg-slate-800 shadow-lg rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+          <div className="bg-white dark:bg-slate-800 shadow-lg rounded-lg p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">
               Profile Information
             </h2>
             <Form method="post" className="space-y-6">
@@ -258,11 +271,11 @@ export default function StudentProfile() {
 
         {/* Change Password Tab */}
         {activeTab === 'password' && (
-          <div className="bg-white dark:bg-slate-800 shadow-lg rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+          <div className="bg-white dark:bg-slate-800 shadow-lg rounded-lg p-4 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6">
               Change Password
             </h2>
-            <Form method="post" className="space-y-6">
+            <Form ref={passwordFormRef} method="post" className="space-y-6">
               <input type="hidden" name="action" value="changePassword" />
               
               {/* Current Password */}
@@ -275,15 +288,15 @@ export default function StudentProfile() {
                     type={showCurrentPassword ? "text" : "password"}
                     id="currentPassword"
                     name="currentPassword"
-                    className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 dark:bg-slate-700 dark:text-white"
+                    className="w-full px-3 py-2 pr-12 sm:pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 dark:bg-slate-700 dark:text-white password-input-mobile mobile-input-focus text-base"
                     required
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center password-toggle-mobile mobile-password-toggle w-10 h-10 sm:w-auto sm:h-auto justify-center"
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
                   >
-                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="h-5 w-5 sm:h-4 sm:w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       {showCurrentPassword ? (
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
                       ) : (
@@ -304,16 +317,16 @@ export default function StudentProfile() {
                     type={showNewPassword ? "text" : "password"}
                     id="newPassword"
                     name="newPassword"
-                    className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 dark:bg-slate-700 dark:text-white"
+                    className="w-full px-3 py-2 pr-12 sm:pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 dark:bg-slate-700 dark:text-white password-input-mobile mobile-input-focus text-base"
                     minLength={8}
                     required
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center password-toggle-mobile mobile-password-toggle w-10 h-10 sm:w-auto sm:h-auto justify-center"
                     onClick={() => setShowNewPassword(!showNewPassword)}
                   >
-                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="h-5 w-5 sm:h-4 sm:w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       {showNewPassword ? (
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
                       ) : (
@@ -337,16 +350,16 @@ export default function StudentProfile() {
                     type={showConfirmPassword ? "text" : "password"}
                     id="confirmPassword"
                     name="confirmPassword"
-                    className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 dark:bg-slate-700 dark:text-white"
+                    className="w-full px-3 py-2 pr-12 sm:pr-10 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-red-500 focus:border-red-500 dark:bg-slate-700 dark:text-white password-input-mobile mobile-input-focus text-base"
                     minLength={8}
                     required
                   />
                   <button
                     type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center password-toggle-mobile mobile-password-toggle w-10 h-10 sm:w-auto sm:h-auto justify-center"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
-                    <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="h-5 w-5 sm:h-4 sm:w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       {showConfirmPassword ? (
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
                       ) : (
